@@ -4,9 +4,9 @@ using Microsoft.TeamFoundation.Core.WebApi;
 using Microsoft.TeamFoundation.DistributedTask.WebApi;
 using Microsoft.VisualStudio.Services.Common;
 using Microsoft.VisualStudio.Services.WebApi;
+using VGManager.Adapter.Models.Models;
+using VGManager.Adapter.Models.StatusEnums;
 using VGManager.Library.AzureAdapter.Interfaces;
-using VGManager.Library.Models.Models;
-using VGManager.Library.Models.StatusEnums;
 
 namespace VGManager.Library.AzureAdapter;
 

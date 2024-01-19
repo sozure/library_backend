@@ -1,7 +1,7 @@
 
 using Microsoft.TeamFoundation.DistributedTask.WebApi;
+using VGManager.Adapter.Models.StatusEnums;
 using VGManager.Library.Entities.VGEntities;
-using VGManager.Library.Models.StatusEnums;
 using VGManager.Library.Services.Models.VariableGroups.Requests;
 
 namespace VGManager.Library.Services;

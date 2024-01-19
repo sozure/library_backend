@@ -2,13 +2,13 @@
 using Azure.Security.KeyVault.Secrets;
 using Microsoft.TeamFoundation.Core.WebApi;
 using Microsoft.TeamFoundation.DistributedTask.WebApi;
+using VGManager.Adapter.Models.Models;
+using VGManager.Adapter.Models.StatusEnums;
 using VGManager.Library.Api.Endpoints.Secret.Request;
 using VGManager.Library.Api.Endpoints.Secret.Response;
 using VGManager.Library.Api.Endpoints.VariableGroup.Request;
 using VGManager.Library.Api.Endpoints.VariableGroup.Response;
 using VGManager.Library.AzureAdapter.Entities;
-using VGManager.Library.Models.Models;
-using VGManager.Library.Models.StatusEnums;
 using VariableGroupEnt = Microsoft.TeamFoundation.DistributedTask.WebApi.VariableGroup;
 
 namespace VGManager.Libary.Api.Tests;

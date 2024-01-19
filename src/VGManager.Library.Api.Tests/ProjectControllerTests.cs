@@ -1,5 +1,7 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using VGManager.Adapter.Models.Models;
+using VGManager.Adapter.Models.StatusEnums;
 using VGManager.Library.Api.Endpoints.Project;
 using VGManager.Library.Api.Endpoints.Project.Response;
 using VGManager.Library.Api.MapperProfiles;
@@ -59,12 +61,12 @@ public class ProjectControllerTests
             Status = AdapterStatus.Success,
             Data = new List<ProjectResponse>()
             {
-                new ProjectResponse()
+                new()
                 {
                     Name = "Project1",
                     SubscriptionIds = Enumerable.Empty<string>()
                 },
-                new ProjectResponse()
+                new()
                 {
                     Name = "Project2",
                     SubscriptionIds = Enumerable.Empty<string>()

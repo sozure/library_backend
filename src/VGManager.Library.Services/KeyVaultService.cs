@@ -1,10 +1,10 @@
 using Azure.Security.KeyVault.Secrets;
 using Microsoft.Extensions.Logging;
 using System.Text.RegularExpressions;
+using VGManager.Adapter.Models.Models;
+using VGManager.Adapter.Models.StatusEnums;
 using VGManager.Library.AzureAdapter.Interfaces;
 using VGManager.Library.Entities.SecretEntities;
-using VGManager.Library.Models.Models;
-using VGManager.Library.Models.StatusEnums;
 using VGManager.Library.Repositories.Interfaces.SecretRepositories;
 using VGManager.Library.Services.Interfaces;
 using VGManager.Library.Services.Models.Secrets.Requests;

@@ -1,10 +1,10 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using VGManager.Adapter.Models.Models;
+using VGManager.Adapter.Models.StatusEnums;
 using VGManager.Library.Api.Endpoints.Secret.Request;
 using VGManager.Library.Api.Endpoints.Secret.Response;
-using VGManager.Library.Models.Models;
-using VGManager.Library.Models.StatusEnums;
 using VGManager.Library.Services.Interfaces;
 using VGManager.Library.Services.Models.Secrets.Requests;
 
@@ -13,7 +13,7 @@ namespace VGManager.Library.Api.Endpoints.Secret;
 [Route("api/[controller]")]
 [ApiController]
 [EnableCors("_allowSpecificOrigins")]
-public class SecretController: ControllerBase
+public class SecretController : ControllerBase
 {
     private readonly IKeyVaultService _keyVaultService;
     private readonly IMapper _mapper;

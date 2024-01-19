@@ -1,12 +1,12 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using VGManager.Adapter.Models.Models;
+using VGManager.Adapter.Models.StatusEnums;
 using VGManager.Library.Api.Endpoints.Changes.Request;
-using VGManager.Library.Models.Models;
-using VGManager.Library.Models.StatusEnums;
+using VGManager.Library.Services.Interfaces;
 using VGManager.Library.Services.Models.Changes.Requests;
 using VGManager.Library.Services.Models.Changes.Responses;
-using VGManager.Library.Services.Interfaces;
 
 namespace VGManager.Library.Api.Endpoints.Changes;
 
