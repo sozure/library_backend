@@ -1,6 +1,5 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using VGManager.Api.Endpoints.Project;
 using VGManager.Library.Api.Endpoints.Project;
 using VGManager.Library.Api.Endpoints.Project.Response;
 using VGManager.Library.Api.MapperProfiles;

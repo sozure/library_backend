@@ -7,7 +7,7 @@ using VGManager.Library.Models.Models;
 using VGManager.Library.Services.Interfaces;
 using VGManager.Library.Services.Models.Common;
 
-namespace VGManager.Api.Endpoints.Project;
+namespace VGManager.Library.Api.Endpoints.Project;
 
 [Route("api/[controller]")]
 [ApiController]
