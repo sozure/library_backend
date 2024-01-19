@@ -4,7 +4,7 @@ using VGManager.Library.Api.Endpoints.VariableGroup.Response;
 using VGManager.Library.Services.Models.VariableGroups.Requests;
 using VGManager.Library.Services.Models.VariableGroups.Results;
 
-namespace VGManager.Api.MapperProfiles;
+namespace VGManager.Library.Api.MapperProfiles;
 
 public class VariableGroupProfile : Profile
 {
