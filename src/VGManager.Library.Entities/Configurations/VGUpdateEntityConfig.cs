@@ -2,10 +2,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using VGManager.Library.Entities.VGEntities;
 
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using VGManager.Library.Entities.VGEntities;
-
 namespace VGManager.Library.Entities.Configurations;
 
 public class VGUpdateEntityConfig : IEntityTypeConfiguration<VGUpdateEntity>

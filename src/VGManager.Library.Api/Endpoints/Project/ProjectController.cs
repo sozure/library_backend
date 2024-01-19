@@ -1,9 +1,9 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using VGManager.Adapter.Models.Models;
 using VGManager.Library.Api.Common;
 using VGManager.Library.Api.Endpoints.Project.Response;
-using VGManager.Library.Models.Models;
 using VGManager.Library.Services.Interfaces;
 using VGManager.Library.Services.Models.Common;
 

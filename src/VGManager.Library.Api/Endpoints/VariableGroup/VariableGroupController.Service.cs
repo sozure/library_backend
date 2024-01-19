@@ -1,8 +1,7 @@
-using Microsoft.AspNetCore.Mvc.RazorPages;
+using VGManager.Adapter.Models.Models;
+using VGManager.Adapter.Models.StatusEnums;
 using VGManager.Library.Api.Endpoints.VariableGroup.Request;
 using VGManager.Library.Api.Endpoints.VariableGroup.Response;
-using VGManager.Library.Models.Models;
-using VGManager.Library.Models.StatusEnums;
 using VGManager.Library.Services.Models.Common;
 using VGManager.Library.Services.Models.Projects;
 using VGManager.Library.Services.Models.VariableGroups.Requests;
