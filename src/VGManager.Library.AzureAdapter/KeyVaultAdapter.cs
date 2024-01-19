@@ -3,9 +3,9 @@ using Azure.ResourceManager;
 using Azure.ResourceManager.KeyVault;
 using Azure.Security.KeyVault.Secrets;
 using Microsoft.Extensions.Logging;
+using VGManager.Adapter.Models.Models;
+using VGManager.Adapter.Models.StatusEnums;
 using VGManager.Library.AzureAdapter.Interfaces;
-using VGManager.Library.Models.Models;
-using VGManager.Library.Models.StatusEnums;
 
 namespace VGManager.Library.AzureAdapter;
 

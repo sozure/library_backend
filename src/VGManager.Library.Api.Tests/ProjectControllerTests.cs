@@ -4,8 +4,6 @@ using VGManager.Library.Api.Endpoints.Project;
 using VGManager.Library.Api.Endpoints.Project.Response;
 using VGManager.Library.Api.MapperProfiles;
 using VGManager.Library.AzureAdapter.Interfaces;
-using VGManager.Library.Models.Models;
-using VGManager.Library.Models.StatusEnums;
 using VGManager.Library.Services;
 
 namespace VGManager.Libary.Api.Tests;
