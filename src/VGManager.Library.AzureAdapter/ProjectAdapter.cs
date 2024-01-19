@@ -5,10 +5,10 @@ using Microsoft.VisualStudio.Services.WebApi;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using VGManager.Adapter.Models.Models;
+using VGManager.Adapter.Models.StatusEnums;
 using VGManager.Library.AzureAdapter.Entities;
 using VGManager.Library.AzureAdapter.Interfaces;
-using VGManager.Library.Models.Models;
-using VGManager.Library.Models.StatusEnums;
 
 namespace VGManager.Library.AzureAdapter;
 public class ProjectAdapter : IProjectAdapter

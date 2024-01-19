@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -15,10 +15,7 @@
       <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
       <PackageReference Include="Microsoft.TeamFoundation.DistributedTask.WebApi" Version="19.228.0-preview" />
       <PackageReference Include="Microsoft.TeamFoundationServer.Client" Version="19.228.0-preview" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\VGManager.Library.Models\VGManager.Library.Models.csproj" />
+      <PackageReference Include="VGManager.Adapter.Models" Version="1.0.0" />
   </ItemGroup>
 
 </Project>

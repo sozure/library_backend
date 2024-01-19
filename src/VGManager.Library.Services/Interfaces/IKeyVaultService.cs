@@ -1,7 +1,7 @@
 
 
-using VGManager.Library.Models.Models;
-using VGManager.Library.Models.StatusEnums;
+using VGManager.Adapter.Models.Models;
+using VGManager.Adapter.Models.StatusEnums;
 using VGManager.Library.Services.Models.Secrets.Requests;
 using VGManager.Library.Services.Models.Secrets.Results;
 

@@ -1,5 +1,5 @@
+using VGManager.Adapter.Models.Models;
 using VGManager.Library.AzureAdapter.Entities;
-using VGManager.Library.Models.Models;
 
 namespace VGManager.Library.AzureAdapter.Interfaces;
 public interface IProjectAdapter

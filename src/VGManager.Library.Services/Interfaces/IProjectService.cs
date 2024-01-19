@@ -1,4 +1,4 @@
-using VGManager.Library.Models.Models;
+using VGManager.Adapter.Models.Models;
 using VGManager.Library.Services.Models.Common;
 using VGManager.Library.Services.Models.Projects;
 

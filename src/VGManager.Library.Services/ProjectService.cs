@@ -1,6 +1,6 @@
 using AutoMapper;
+using VGManager.Adapter.Models.Models;
 using VGManager.Library.AzureAdapter.Interfaces;
-using VGManager.Library.Models.Models;
 using VGManager.Library.Services.Interfaces;
 using VGManager.Library.Services.Models.Common;
 using VGManager.Library.Services.Models.Projects;

@@ -1,6 +1,6 @@
 using Microsoft.TeamFoundation.DistributedTask.WebApi;
-using VGManager.Library.Models.Models;
-using VGManager.Library.Models.StatusEnums;
+using VGManager.Adapter.Models.Models;
+using VGManager.Adapter.Models.StatusEnums;
 
 namespace VGManager.Library.AzureAdapter.Interfaces;
 
