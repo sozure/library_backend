@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Infrastructure;
 using System.Reflection;
+using VGManager.Adapter.Client.Extensions;
 using VGManager.Library.Api;
 using VGManager.Library.Api.HealthChecks;
 using VGManager.Library.AzureAdapter;
@@ -54,7 +55,7 @@ static partial class Program
 
         services.AddAutoMapper(
             typeof(Program),
-            typeof(ServiceProfiles.ProjectProfile)
+            typeof(ServiceProfiles.ChangesProfile)
         );
 
         services.AddOptions<OrganizationSettings>()
@@ -89,6 +90,8 @@ static partial class Program
             );
         }, ServiceLifetime.Scoped);
 
+        services.SetupVGManagerAdapterClient(configuration);
+
         services.AddScoped<IVGAddColdRepository, VGAddColdRepository>();
         services.AddScoped<IVGDeleteColdRepository, VGDeleteColdRepository>();
         services.AddScoped<IVGUpdateColdRepository, VGUpdateColdRepository>();
@@ -98,9 +101,7 @@ static partial class Program
         services.AddScoped<IVariableFilterService, VariableFilterService>();
         services.AddScoped<IVariableGroupService, VariableGroupService>();
         services.AddScoped<IKeyVaultService, KeyVaultService>();
-        services.AddScoped<IProjectService, ProjectService>();
         services.AddScoped<IVariableGroupAdapter, VariableGroupAdapter>();
-        services.AddScoped<IProjectAdapter, ProjectAdapter>();
         services.AddScoped<IKeyVaultAdapter, KeyVaultAdapter>();
         services.AddScoped<IHttpClientProvider, HttpClientProvider>();
     }
