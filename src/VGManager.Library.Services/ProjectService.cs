@@ -1,6 +1,9 @@
-using AutoMapper;
+using System.Text.Json;
+using VGManager.Adapter.Azure.Services.Requests;
+using VGManager.Adapter.Client.Interfaces;
+using VGManager.Adapter.Models.Kafka;
 using VGManager.Adapter.Models.Models;
-using VGManager.Library.AzureAdapter.Interfaces;
+using VGManager.Adapter.Models.Response;
 using VGManager.Library.Services.Interfaces;
 using VGManager.Library.Services.Models.Common;
 using VGManager.Library.Services.Models.Projects;
@@ -9,24 +12,44 @@ namespace VGManager.Library.Services;
 
 public class ProjectService : IProjectService
 {
-    private readonly IProjectAdapter _projectRepository;
-    private readonly IMapper _mapper;
+    private readonly IVGManagerAdapterClientService _clientService;
 
-    public ProjectService(IProjectAdapter projectRepository, IMapper mapper)
+    public ProjectService(
+        IVGManagerAdapterClientService clientService
+        )
     {
-        _projectRepository = projectRepository;
-        _mapper = mapper;
+        _clientService = clientService;
     }
 
-    public async Task<AdapterResponseModel<IEnumerable<ProjectResult>>> GetProjectsAsync(BaseModel projectModel, CancellationToken cancellationToken = default)
+    public async Task<AdapterResponseModel<IEnumerable<ProjectResult>>> GetProjectsAsync(
+        BaseModel projectModel, 
+        CancellationToken cancellationToken = default
+        )
     {
-        var url = $"https://dev.azure.com/{projectModel.Organization}";
-        var projectsEntity = await _projectRepository.GetProjectsAsync(url, projectModel.PAT, cancellationToken);
-
-        return new()
+        var request = new BaseRequest()
         {
-            Status = projectsEntity.Status,
-            Data = _mapper.Map<IEnumerable<ProjectResult>>(projectsEntity.Data)
+            Organization = projectModel.Organization,
+            PAT = projectModel.PAT
+        };
+
+        (bool isSuccess, string response) = await _clientService.SendAndReceiveMessageAsync(
+            CommandTypes.GetProjectsRequest,
+            JsonSerializer.Serialize(request),
+            cancellationToken);
+
+        if (!isSuccess)
+        {
+            return new AdapterResponseModel<IEnumerable<ProjectResult>>()
+            {
+                Data = Enumerable.Empty<ProjectResult>()
+            };
+        }
+
+        var result = JsonSerializer.Deserialize<BaseResponse<IEnumerable<ProjectResult>>>(response)?.Data;
+
+        return new AdapterResponseModel<IEnumerable<ProjectResult>>() 
+        { 
+            Data = result ?? Enumerable.Empty<ProjectResult>() 
         };
     }
 }

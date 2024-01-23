@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
       <ProjectGuid>B11A0E3B-1521-465A-BA95-8D1A4A25B2B4</ProjectGuid>
@@ -9,6 +9,8 @@
 
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="12.0.1" />
+      <PackageReference Include="VGManager.Adapter.Client" Version="1.1.0" />
+      <PackageReference Include="VGManager.Adapter.Models" Version="1.2.0" />
   </ItemGroup>
 
   <ItemGroup>
