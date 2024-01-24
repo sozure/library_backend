@@ -3,7 +3,9 @@ using VGManager.Adapter.Azure.Services.Requests;
 using VGManager.Adapter.Client.Interfaces;
 using VGManager.Adapter.Models.Kafka;
 using VGManager.Adapter.Models.Models;
+using VGManager.Adapter.Models.Requests;
 using VGManager.Adapter.Models.Response;
+using VGManager.Adapter.Models.StatusEnums;
 using VGManager.Library.Services.Interfaces;
 using VGManager.Library.Services.Models.Common;
 using VGManager.Library.Services.Models.Projects;
@@ -21,7 +23,7 @@ public class ProjectService : IProjectService
         _clientService = clientService;
     }
 
-    public async Task<AdapterResponseModel<IEnumerable<ProjectResult>>> GetProjectsAsync(
+    public async Task<AdapterResponseModel<IEnumerable<ProjectRequest>>> GetProjectsAsync(
         BaseModel projectModel, 
         CancellationToken cancellationToken = default
         )
@@ -39,17 +41,18 @@ public class ProjectService : IProjectService
 
         if (!isSuccess)
         {
-            return new AdapterResponseModel<IEnumerable<ProjectResult>>()
+            return new AdapterResponseModel<IEnumerable<ProjectRequest>>()
             {
-                Data = Enumerable.Empty<ProjectResult>()
+                Data = Enumerable.Empty<ProjectRequest>()
             };
         }
 
-        var result = JsonSerializer.Deserialize<BaseResponse<IEnumerable<ProjectResult>>>(response)?.Data;
+        var result = JsonSerializer.Deserialize<BaseResponse<AdapterResponseModel<IEnumerable<ProjectRequest>>>>(response)?.Data;
 
-        return new AdapterResponseModel<IEnumerable<ProjectResult>>() 
-        { 
-            Data = result ?? Enumerable.Empty<ProjectResult>() 
+        return result ?? new AdapterResponseModel<IEnumerable<ProjectRequest>>()
+        {
+            Status = AdapterStatus.Unknown,
+            Data = Enumerable.Empty<ProjectRequest>()
         };
     }
 }

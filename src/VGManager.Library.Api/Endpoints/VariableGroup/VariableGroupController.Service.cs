@@ -1,4 +1,5 @@
 using VGManager.Adapter.Models.Models;
+using VGManager.Adapter.Models.Requests;
 using VGManager.Adapter.Models.StatusEnums;
 using VGManager.Library.Api.Endpoints.VariableGroup.Request;
 using VGManager.Library.Api.Endpoints.VariableGroup.Response;
@@ -29,7 +30,10 @@ public partial class VariableGroupController
         };
     }
 
-    private async Task<AdapterResponseModel<IEnumerable<ProjectResult>>> GetProjectsAsync(VariableRequest request, CancellationToken cancellationToken)
+    private async Task<AdapterResponseModel<IEnumerable<ProjectRequest>>> GetProjectsAsync(
+        VariableRequest request, 
+        CancellationToken cancellationToken
+        )
     {
         var projectModel = new BaseModel
         {
