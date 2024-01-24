@@ -1,9 +1,15 @@
+using Azure.Core;
 using Azure.Security.KeyVault.Secrets;
 using Microsoft.Extensions.Logging;
+using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Threading;
+using VGManager.Adapter.Client.Interfaces;
+using VGManager.Adapter.Models.Kafka;
 using VGManager.Adapter.Models.Models;
+using VGManager.Adapter.Models.Requests;
+using VGManager.Adapter.Models.Response;
 using VGManager.Adapter.Models.StatusEnums;
-using VGManager.Library.AzureAdapter.Interfaces;
 using VGManager.Library.Entities.SecretEntities;
 using VGManager.Library.Repositories.Interfaces.SecretRepositories;
 using VGManager.Library.Services.Interfaces;
@@ -14,93 +20,133 @@ namespace VGManager.Library.Services;
 
 public class KeyVaultService : IKeyVaultService
 {
-    private readonly IKeyVaultAdapter _keyVaultConnectionRepository;
+    private readonly IVGManagerAdapterClientService _clientService;
     private readonly ISecretChangeColdRepository _secretChangeColdRepository;
     private readonly IKeyVaultCopyColdRepository _keyVaultCopyColdRepository;
-    private string _keyVault = null!;
     private readonly ILogger _logger;
 
     public KeyVaultService(
-        IKeyVaultAdapter keyVaultConnectionRepository,
+        IVGManagerAdapterClientService clientService,
         ISecretChangeColdRepository secretChangeColdRepository,
         IKeyVaultCopyColdRepository keyVaultCopyColdRepository,
         ILogger<KeyVaultService> logger
         )
     {
-        _keyVaultConnectionRepository = keyVaultConnectionRepository;
+        _clientService = clientService;
         _secretChangeColdRepository = secretChangeColdRepository;
         _keyVaultCopyColdRepository = keyVaultCopyColdRepository;
         _logger = logger;
     }
 
-    public void SetupConnectionRepository(SecretModel secretModel)
-    {
-        var keyVault = secretModel.KeyVaultName;
-        _keyVaultConnectionRepository.Setup(keyVault, secretModel.TenantId, secretModel.ClientId, secretModel.ClientSecret);
-        _keyVault = keyVault;
-    }
-
     public async Task<(string?, IEnumerable<string>)> GetKeyVaultsAsync(
-        string tenantId,
-        string clientId,
-        string clientSecret,
+        SecretBaseModel secretModel,
         CancellationToken cancellationToken = default
         )
     {
-        return await _keyVaultConnectionRepository.GetKeyVaultsAsync(tenantId, clientId, clientSecret, cancellationToken);
+        var request = GetBaseSecretRequest(secretModel);
+        (var isSuccess, var response) = await CommunicateWithAdapterAsync(request, CommandTypes.GetKeyVaultsRequest, cancellationToken);
+
+        if (!isSuccess)
+        {
+            return (string.Empty, Enumerable.Empty<string>());
+        }
+
+        var result = JsonSerializer.Deserialize<BaseResponse<Dictionary<string, object>>>(response)?.Data;
+
+        if (result is null)
+        {
+            return (string.Empty, Enumerable.Empty<string>());
+        }
+
+        int.TryParse(result["Status"].ToString(), out int i);
+        var status = (AdapterStatus)i;
+
+        if(status != AdapterStatus.Success)
+        {
+            return (string.Empty, Enumerable.Empty<string>());
+        }
+
+        var dict = JsonSerializer.Deserialize<Dictionary<string, object>>(result["Data"].ToString() ?? "[]");
+        var subscription = dict?["subscription"].ToString() ?? string.Empty;
+        var keyVaults = JsonSerializer.Deserialize<List<string>>(dict?["keyVaults"].ToString() ?? "[]") ?? [];
+
+        return new (subscription, keyVaults);
     }
 
-    public async Task<AdapterResponseModel<IEnumerable<SecretResult>>> GetSecretsAsync(string secretFilter, CancellationToken cancellationToken = default)
+    public async Task<AdapterResponseModel<IEnumerable<SecretResult>>> GetSecretsAsync(
+        SecretModel secretModel,
+        CancellationToken cancellationToken = default
+        )
     {
         var secretList = new List<SecretResult>();
-        var secretsEntity = await _keyVaultConnectionRepository.GetSecretsAsync(cancellationToken);
-        var status = secretsEntity.Status;
-        var secrets = CollectSecrets(secretsEntity);
-
-        if (status == AdapterStatus.Success)
+        var request = new SecretRequest<string>()
         {
-            var filteredSecrets = Filter(secrets, secretFilter);
+            AdditionalData = secretModel.SecretFilter,
+            ClientId = secretModel.ClientId,
+            ClientSecret = secretModel.ClientSecret,
+            KeyVaultName = secretModel.KeyVaultName,
+            TenantId = secretModel.TenantId
+        };
 
-            foreach (var filteredSecret in filteredSecrets)
-            {
-                CollectSecrets(secretList, filteredSecret);
-            }
+        (var isSuccess, var response) = await CommunicateWithAdapterAsync(request, CommandTypes.GetSecretsRequest, cancellationToken);
 
-            return GetResult(status, secretList);
+        if (!isSuccess)
+        {
+            return new AdapterResponseModel<IEnumerable<SecretResult>>() { Data = Enumerable.Empty<SecretResult>() };
         }
-        return GetResult(status, secretList);
+
+        var result = JsonSerializer
+            .Deserialize<BaseResponse<AdapterResponseModel<IEnumerable<AdapterResponseModel<KeyVaultSecret?>>>>>(response)?.Data;
+
+        if (result is null)
+        {
+            return new AdapterResponseModel<IEnumerable<SecretResult>>() { Data = Enumerable.Empty<SecretResult>() };
+        }
+
+        if (result.Status != AdapterStatus.Success)
+        {
+            return new AdapterResponseModel<IEnumerable<SecretResult>>() { Data = Enumerable.Empty<SecretResult>() };
+        }
+
+        var secrets = CollectSecrets(result);
+        var filteredSecrets = Filter(secrets, secretModel.SecretFilter);
+
+        foreach (var filteredSecret in filteredSecrets)
+        {
+            CollectSecrets(secretModel.KeyVaultName, secretList, filteredSecret);
+        }
+
+        return GetResult(result.Status, secretList);
     }
 
     public async Task<AdapterStatus> CopySecretsAsync(SecretCopyModel secretCopyModel, CancellationToken cancellationToken = default)
     {
         try
         {
-            _keyVaultConnectionRepository.Setup(
-            secretCopyModel.FromKeyVault,
-            secretCopyModel.TenantId,
-            secretCopyModel.ClientId,
-            secretCopyModel.ClientSecret
-            );
-
-            var fromSecrets = await _keyVaultConnectionRepository.GetAllAsync(cancellationToken);
-
-            _keyVaultConnectionRepository.Setup(
-                secretCopyModel.ToKeyVault,
-                secretCopyModel.TenantId,
-                secretCopyModel.ClientId,
-                secretCopyModel.ClientSecret
-                );
-
-            var toSecrets = await _keyVaultConnectionRepository.GetAllAsync(cancellationToken);
+            var fromSecrets = await GetSecretsAsync(secretCopyModel, true, cancellationToken);
+            var toSecrets = await GetSecretsAsync(secretCopyModel, false, cancellationToken);
 
             foreach (var secret in fromSecrets)
             {
                 var parameters = ParametersBuilder(secret, toSecrets, secretCopyModel.OverrideSecret);
-                var partialStatus = await _keyVaultConnectionRepository.AddKeyVaultSecretAsync(parameters, cancellationToken);
 
-                if (partialStatus != AdapterStatus.Success)
+                var request = new SecretRequest<Dictionary<string, string>>()
                 {
-                    return partialStatus;
+                    ClientId = secretCopyModel.ClientId,
+                    ClientSecret = secretCopyModel.ClientSecret,
+                    TenantId = secretCopyModel.TenantId,
+                    KeyVaultName = secretCopyModel.ToKeyVault,
+                    AdditionalData = parameters
+                };
+
+                (var isSuccess, var response) = await CommunicateWithAdapterAsync(request, CommandTypes.AddKeyVaultSecretRequest, cancellationToken);
+
+                var result = JsonSerializer
+                    .Deserialize<BaseResponse<AdapterStatus>>(response)?.Data;
+
+                if (!isSuccess || result != AdapterStatus.Success)
+                {
+                    return result ?? AdapterStatus.Unknown;
                 }
             }
 
@@ -123,83 +169,213 @@ public class KeyVaultService : IKeyVaultService
         }
     }
 
-    public AdapterResponseModel<IEnumerable<DeletedSecretResult>> GetDeletedSecrets(string secretFilter, CancellationToken cancellationToken = default)
+    public async Task<AdapterResponseModel<IEnumerable<DeletedSecretResult>>> GetDeletedSecretsAsync(
+        SecretModel secretModel,
+        CancellationToken cancellationToken = default
+        )
     {
         var secretList = new List<DeletedSecretResult>();
-        var secretsEntity = _keyVaultConnectionRepository.GetDeletedSecrets(cancellationToken);
-        var status = secretsEntity.Status;
+        var request = GetBaseSecretRequest(secretModel);
+        (var isSuccess, var response) = await CommunicateWithAdapterAsync(request, CommandTypes.GetDeletedSecretsRequest, cancellationToken);
 
-        if (status == AdapterStatus.Success)
+        if (!isSuccess)
         {
-            var filteredSecrets = Filter(secretsEntity!.Data, secretFilter);
-
-            foreach (var filteredSecret in filteredSecrets)
-            {
-                secretList.Add(new()
-                {
-                    KeyVault = _keyVault,
-                    SecretName = filteredSecret.Name,
-                    SecretValue = filteredSecret.Value,
-                    DeletedOn = filteredSecret.DeletedOn
-                });
-            }
-            return GetResult(status, secretList);
+            return new AdapterResponseModel<IEnumerable<DeletedSecretResult>>() { Data = Enumerable.Empty<DeletedSecretResult>() };
         }
-        return GetResult(status);
+
+        var result = JsonSerializer.Deserialize<BaseResponse<AdapterResponseModel<IEnumerable<Dictionary<string, object>>>>>(response)?.Data;
+
+        if (result is null)
+        {
+            return new AdapterResponseModel<IEnumerable<DeletedSecretResult>>() { Data = Enumerable.Empty<DeletedSecretResult>() };
+        }
+
+        var status = result.Status;
+
+        if (status != AdapterStatus.Success)
+        {
+            return new AdapterResponseModel<IEnumerable<DeletedSecretResult>>() { Data = Enumerable.Empty<DeletedSecretResult>() };
+        }
+
+        var filteredSecrets = Filter(result.Data, secretModel.SecretFilter);
+
+        foreach (var filteredSecret in filteredSecrets)
+        {
+            secretList.Add(new()
+            {
+                KeyVault = secretModel.KeyVaultName,
+                SecretName = filteredSecret["Name"]?.ToString() ?? string.Empty,
+                DeletedOn = DateTimeOffset.Parse(filteredSecret["DeletedOn"]?.ToString() ?? string.Empty).UtcDateTime
+            });
+        }
+        return GetResult(status, secretList);
     }
 
 
-    public async Task<AdapterStatus> DeleteAsync(string secretFilter, string userName, CancellationToken cancellationToken = default)
+    public async Task<AdapterStatus> DeleteAsync(
+        SecretModel secretModel,
+        CancellationToken cancellationToken = default
+        )
     {
-        var secretsResultModel = await _keyVaultConnectionRepository.GetSecretsAsync(cancellationToken);
-        var status = secretsResultModel.Status;
-
-        if (status == AdapterStatus.Success)
+        var request = new SecretRequest<string>()
         {
-            return await DeleteAsync(secretFilter, userName, secretsResultModel, cancellationToken);
-        }
+            AdditionalData = secretModel.SecretFilter,
+            ClientId = secretModel.ClientId,
+            ClientSecret = secretModel.ClientSecret,
+            KeyVaultName = secretModel.KeyVaultName,
+            TenantId = secretModel.TenantId
+        };
 
-        return status;
-    }
+        (var isSuccess, var response) = await CommunicateWithAdapterAsync(request, CommandTypes.GetSecretsRequest, cancellationToken);
 
-    public async Task<AdapterStatus> RecoverSecretAsync(string secretFilter, string userName, CancellationToken cancellationToken = default)
-    {
-        var deletedSecretsEntity = _keyVaultConnectionRepository.GetDeletedSecrets(cancellationToken);
-        var status = deletedSecretsEntity.Status;
-
-        if (status == AdapterStatus.Success)
+        if (!isSuccess)
         {
-            var filteredSecrets = Filter(deletedSecretsEntity.Data, secretFilter);
-            var recoverCounter = 0;
-            foreach (var secret in filteredSecrets)
-            {
-                var recoverStatus = await _keyVaultConnectionRepository.RecoverSecretAsync(secret.Name, cancellationToken);
-                if (recoverStatus == AdapterStatus.Success)
-                {
-                    recoverCounter++;
-                }
-            }
-
-            if (recoverCounter == filteredSecrets.Count())
-            {
-                var entity = new SecretChangeEntity
-                {
-                    ChangeType = SecretChangeType.Recover,
-                    Date = DateTime.UtcNow,
-                    KeyVaultName = _keyVault,
-                    SecretNameRegex = secretFilter,
-                    User = userName
-
-                };
-                await _secretChangeColdRepository.AddEntityAsync(entity, cancellationToken);
-                return AdapterStatus.Success;
-            }
             return AdapterStatus.Unknown;
         }
-        return status;
+
+        var result = JsonSerializer
+            .Deserialize<BaseResponse<AdapterResponseModel<IEnumerable<AdapterResponseModel<KeyVaultSecret?>>>>>(response)?.Data;
+
+        if (result is null)
+        {
+            return AdapterStatus.Unknown;
+        }
+
+        var status = result.Status;
+
+        if (status != AdapterStatus.Success)
+        {
+            return status;
+        }
+
+        return await DeleteAsync(secretModel, result, cancellationToken);
     }
 
-    private IEnumerable<AdapterResponseModel<KeyVaultSecret?>> Filter(IEnumerable<AdapterResponseModel<KeyVaultSecret?>> keyVaultSecrets, string filter)
+    public async Task<AdapterStatus> RecoverSecretAsync(
+        SecretModel secretModel,
+        CancellationToken cancellationToken = default
+        )
+    {
+        var request = GetBaseSecretRequest(secretModel);
+        (var isSuccess, var response) = await CommunicateWithAdapterAsync(request, CommandTypes.GetDeletedSecretsRequest, cancellationToken);
+
+        if (!isSuccess)
+        {
+            return AdapterStatus.Unknown;
+        }
+
+        var result = JsonSerializer.Deserialize<BaseResponse<AdapterResponseModel<IEnumerable<Dictionary<string, object>>>>>(response)?.Data;
+
+        if (result is null)
+        {
+            return AdapterStatus.Unknown;
+        }
+
+        var status = result.Status;
+
+        if (status != AdapterStatus.Success)
+        {
+            return status;
+        }
+
+        (var filteredSecretsCounter, var recoverCounter) = await GetRecoversResponseAsync(
+            secretModel,
+            result.Data, 
+            cancellationToken
+            );
+
+        if (recoverCounter == filteredSecretsCounter)
+        {
+            var entity = new SecretChangeEntity
+            {
+                ChangeType = SecretChangeType.Recover,
+                Date = DateTime.UtcNow,
+                KeyVaultName = secretModel.KeyVaultName,
+                SecretNameRegex = secretModel.SecretFilter,
+                User = secretModel.UserName
+            };
+
+            await _secretChangeColdRepository.AddEntityAsync(entity, cancellationToken);
+            return AdapterStatus.Success;
+        }
+        return AdapterStatus.Unknown;
+    }
+
+    private async Task<IEnumerable<KeyVaultSecret>> GetSecretsAsync(
+        SecretCopyModel secretCopyModel,
+        bool from,
+        CancellationToken cancellationToken = default
+        )
+    {
+        var request = GetBaseSecretRequest(secretCopyModel, from);
+        (var isSuccess, var response) = await CommunicateWithAdapterAsync(request, CommandTypes.GetAllSecretsRequest, cancellationToken);
+
+        if (!isSuccess)
+        {
+            return Enumerable.Empty<KeyVaultSecret>();
+        }
+
+        var result = JsonSerializer.Deserialize<BaseResponse<AdapterResponseModel<IEnumerable<KeyVaultSecret>>>>(response)?.Data;
+
+        if (result is null)
+        {
+            return Enumerable.Empty<KeyVaultSecret>();
+        }
+
+        var status = result.Status;
+
+        if (status != AdapterStatus.Success)
+        {
+            return Enumerable.Empty<KeyVaultSecret>();
+        }
+
+        return result.Data;
+    }
+
+    private async Task<(int, int)> GetRecoversResponseAsync(
+        SecretModel secretModel,
+        IEnumerable<Dictionary<string, object>> secrets, 
+        CancellationToken cancellationToken
+        )
+    {
+        var filteredSecrets = Filter(secrets, secretModel.SecretFilter);
+        var recoverCounter = 0;
+        foreach (var secret in filteredSecrets)
+        {
+            var recoverReq = new SecretRequest<string>()
+            {
+                AdditionalData = secret["Name"].ToString() ?? string.Empty,
+                ClientId = secretModel.ClientId,
+                ClientSecret = secretModel.ClientSecret,
+                KeyVaultName = secretModel.KeyVaultName,
+                TenantId = secretModel.TenantId
+            };
+            (var isSuccess, var response) = await CommunicateWithAdapterAsync(recoverReq, CommandTypes.RecoverSecretRequest, cancellationToken);
+
+            if (!isSuccess)
+            {
+                return (-1, 0);
+            }
+
+            var recoverStatus = JsonSerializer.Deserialize<BaseResponse<AdapterStatus>>(response)?.Data;
+
+            if (recoverStatus != AdapterStatus.Success)
+            {
+                return (-1, 0);
+            }
+
+            if (recoverStatus == AdapterStatus.Success)
+            {
+                recoverCounter++;
+            }
+        }
+        return (filteredSecrets.Count(),  recoverCounter);
+    }
+
+    private IEnumerable<AdapterResponseModel<KeyVaultSecret?>> Filter(
+        IEnumerable<AdapterResponseModel<KeyVaultSecret?>> keyVaultSecrets, 
+        string filter
+        )
     {
         Regex regex;
         try
@@ -218,6 +394,27 @@ public class KeyVaultService : IKeyVaultService
             Data = secret.Data
         });
         return result;
+    }
+
+    private IEnumerable<Dictionary<string, object>> Filter(
+        IEnumerable<Dictionary<string, object>> keyVaultSecrets,
+        string filter
+        )
+    {
+        Regex regex;
+        try
+        {
+            regex = new Regex(filter.ToLower(), RegexOptions.None, TimeSpan.FromMilliseconds(5));
+        }
+        catch (RegexParseException ex)
+        {
+            _logger.LogError(ex, "Couldn't parse and create regex. Value: {value}.", filter);
+            return Enumerable.Empty<Dictionary<string, object>>();
+        }
+        var relevantSecrets = keyVaultSecrets.Where(
+            secret => regex.IsMatch(secret?["Name"].ToString()?.ToLower() ?? string.Empty)
+            ).ToList();
+        return relevantSecrets;
     }
 
     private IEnumerable<DeletedSecret> Filter(IEnumerable<DeletedSecret> keyVaultSecrets, string filter)
@@ -253,14 +450,13 @@ public class KeyVaultService : IKeyVaultService
     }
 
     private async Task<AdapterStatus> DeleteAsync(
-        string secretFilter,
-        string userName,
+        SecretModel secretModel,
         AdapterResponseModel<IEnumerable<AdapterResponseModel<KeyVaultSecret?>>> secretsResultModel,
         CancellationToken cancellationToken
         )
     {
         var secrets = CollectSecrets(secretsResultModel);
-        var filteredSecrets = Filter(secrets, secretFilter);
+        var filteredSecrets = Filter(secrets, secretModel.SecretFilter);
         var deletionCounter1 = 0;
         var deletionCounter2 = 0;
 
@@ -271,9 +467,21 @@ public class KeyVaultService : IKeyVaultService
             if (secretName is not null && secretValue is not null)
             {
                 deletionCounter1++;
-                var deletionStatus = await _keyVaultConnectionRepository.DeleteSecretAsync(secretName, cancellationToken);
 
-                if (deletionStatus == AdapterStatus.Success)
+                var request = new SecretRequest<string>()
+                {
+                    AdditionalData = secretName,
+                    ClientId = secretModel.ClientId,
+                    ClientSecret = secretModel.ClientSecret,
+                    KeyVaultName = secretModel.KeyVaultName,
+                    TenantId = secretModel.TenantId
+                };
+                (var isSuccess, var response) = await CommunicateWithAdapterAsync(request, CommandTypes.DeleteSecretRequest, cancellationToken);
+
+                var deletionStatus = JsonSerializer
+                    .Deserialize<BaseResponse<AdapterStatus>>(response)?.Data;
+
+                if (isSuccess && deletionStatus == AdapterStatus.Success)
                 {
                     deletionCounter2++;
                 }
@@ -286,9 +494,9 @@ public class KeyVaultService : IKeyVaultService
             {
                 ChangeType = SecretChangeType.Delete,
                 Date = DateTime.UtcNow,
-                KeyVaultName = _keyVault,
-                SecretNameRegex = secretFilter,
-                User = userName
+                KeyVaultName = secretModel.KeyVaultName,
+                SecretNameRegex = secretModel.SecretFilter,
+                User = secretModel.UserName
 
             };
             await _secretChangeColdRepository.AddEntityAsync(entity, cancellationToken);
@@ -316,7 +524,7 @@ public class KeyVaultService : IKeyVaultService
         return result;
     }
 
-    private void CollectSecrets(List<SecretResult> secretList, AdapterResponseModel<KeyVaultSecret?>? filteredSecret)
+    private static void CollectSecrets(string keyVault, List<SecretResult> secretList, AdapterResponseModel<KeyVaultSecret?>? filteredSecret)
     {
         if (filteredSecret is not null)
         {
@@ -327,7 +535,7 @@ public class KeyVaultService : IKeyVaultService
             {
                 secretList.Add(new()
                 {
-                    KeyVault = _keyVault,
+                    KeyVault = keyVault,
                     SecretName = secretName,
                     SecretValue = secretValue
                 });
@@ -335,16 +543,10 @@ public class KeyVaultService : IKeyVaultService
         }
     }
 
-    private static AdapterResponseModel<IEnumerable<DeletedSecretResult>> GetResult(AdapterStatus status)
-    {
-        return new()
-        {
-            Status = status,
-            Data = Enumerable.Empty<DeletedSecretResult>()
-        };
-    }
-
-    private static AdapterResponseModel<IEnumerable<DeletedSecretResult>> GetResult(AdapterStatus status, IEnumerable<DeletedSecretResult> secretList)
+    private static AdapterResponseModel<IEnumerable<DeletedSecretResult>> GetResult(
+        AdapterStatus status, 
+        IEnumerable<DeletedSecretResult> secretList
+        )
     {
         return new()
         {
@@ -360,5 +562,47 @@ public class KeyVaultService : IKeyVaultService
             Status = status,
             Data = secretList
         };
+    }
+
+    private static BaseSecretRequest GetBaseSecretRequest(SecretModel secretModel)
+    {
+        return new BaseSecretRequest()
+        {
+            ClientId = secretModel.ClientId,
+            ClientSecret = secretModel.ClientSecret,
+            TenantId = secretModel.TenantId,
+            KeyVaultName = secretModel.KeyVaultName
+        };
+    }
+
+    private static BaseSecretRequest GetBaseSecretRequest(SecretBaseModel secretModel)
+    {
+        return new BaseSecretRequest()
+        {
+            ClientId = secretModel.ClientId,
+            ClientSecret = secretModel.ClientSecret,
+            TenantId = secretModel.TenantId,
+            KeyVaultName = string.Empty
+        };
+    }
+
+    private static BaseSecretRequest GetBaseSecretRequest(SecretCopyModel secretModel, bool from)
+    {
+        return new BaseSecretRequest()
+        {
+            ClientId = secretModel.ClientId,
+            ClientSecret = secretModel.ClientSecret,
+            TenantId = secretModel.TenantId,
+            KeyVaultName = from? secretModel.FromKeyVault : secretModel.ToKeyVault
+        };
+    }
+
+    private async Task<(bool, string)> CommunicateWithAdapterAsync<T>(T request, string commandTypes, CancellationToken cancellationToken)
+    {
+        (bool isSuccess, string response) = await _clientService.SendAndReceiveMessageAsync(
+            commandTypes,
+            JsonSerializer.Serialize(request),
+            cancellationToken);
+        return (isSuccess, response);
     }
 }

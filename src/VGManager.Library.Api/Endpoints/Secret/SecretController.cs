@@ -35,12 +35,8 @@ public class SecretController : ControllerBase
     {
         try
         {
-            (var subscriptionId, var keyVaults) = await _keyVaultService.GetKeyVaultsAsync(
-                request.TenantId,
-                request.ClientId,
-                request.ClientSecret,
-                cancellationToken
-            );
+            var model = _mapper.Map<SecretBaseModel>(request);
+            (var subscriptionId, var keyVaults) = await _keyVaultService.GetKeyVaultsAsync(model, cancellationToken);
             var result = new AdapterResponseModel<IEnumerable<string>, string>
             {
                 Status = AdapterStatus.Success,
@@ -86,9 +82,7 @@ public class SecretController : ControllerBase
         )
     {
         var secretModel = _mapper.Map<SecretModel>(request);
-
-        _keyVaultService.SetupConnectionRepository(secretModel);
-        var matchedSecrets = await _keyVaultService.GetSecretsAsync(secretModel.SecretFilter, cancellationToken);
+        var matchedSecrets = await _keyVaultService.GetSecretsAsync(secretModel, cancellationToken);
 
         var result = new AdapterResponseModel<IEnumerable<SecretResponse>>()
         {
@@ -103,15 +97,13 @@ public class SecretController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public ActionResult<AdapterResponseModel<IEnumerable<DeletedSecretResponse>>> GetDeleted(
+    public async Task<ActionResult<AdapterResponseModel<IEnumerable<DeletedSecretResponse>>>> GetDeleted(
         [FromBody] SecretRequest request,
         CancellationToken cancellationToken
         )
     {
         var secretModel = _mapper.Map<SecretModel>(request);
-
-        _keyVaultService.SetupConnectionRepository(secretModel);
-        var matchedDeletedSecrets = _keyVaultService.GetDeletedSecrets(secretModel.SecretFilter, cancellationToken);
+        var matchedDeletedSecrets = await _keyVaultService.GetDeletedSecretsAsync(secretModel, cancellationToken);
 
         var result = new AdapterResponseModel<IEnumerable<DeletedSecretResponse>>()
         {
@@ -132,10 +124,8 @@ public class SecretController : ControllerBase
         )
     {
         var secretModel = _mapper.Map<SecretModel>(request);
-
-        _keyVaultService.SetupConnectionRepository(secretModel);
-        await _keyVaultService.DeleteAsync(secretModel.SecretFilter, secretModel.UserName, cancellationToken);
-        var matchedSecrets = await _keyVaultService.GetSecretsAsync(secretModel.SecretFilter, cancellationToken);
+        await _keyVaultService.DeleteAsync(secretModel, cancellationToken);
+        var matchedSecrets = await _keyVaultService.GetSecretsAsync(secretModel, cancellationToken);
 
         var result = new AdapterResponseModel<IEnumerable<SecretResponse>>()
         {
@@ -156,10 +146,7 @@ public class SecretController : ControllerBase
         )
     {
         var secretModel = _mapper.Map<SecretModel>(request);
-
-        _keyVaultService.SetupConnectionRepository(secretModel);
-        var status = await _keyVaultService.DeleteAsync(secretModel.SecretFilter, secretModel.UserName, cancellationToken);
-
+        var status = await _keyVaultService.DeleteAsync(secretModel, cancellationToken);
         return Ok(status);
     }
 
@@ -173,10 +160,8 @@ public class SecretController : ControllerBase
         )
     {
         var secretModel = _mapper.Map<SecretModel>(request);
-
-        _keyVaultService.SetupConnectionRepository(secretModel);
-        await _keyVaultService.RecoverSecretAsync(secretModel.SecretFilter, secretModel.UserName, cancellationToken);
-        var matchedSecrets = _keyVaultService.GetDeletedSecrets(secretModel.SecretFilter, cancellationToken);
+        await _keyVaultService.RecoverSecretAsync(secretModel, cancellationToken);
+        var matchedSecrets = await _keyVaultService.GetDeletedSecretsAsync(secretModel, cancellationToken);
 
         var result = new AdapterResponseModel<IEnumerable<DeletedSecretResponse>>()
         {
@@ -197,10 +182,7 @@ public class SecretController : ControllerBase
         )
     {
         var secretModel = _mapper.Map<SecretModel>(request);
-
-        _keyVaultService.SetupConnectionRepository(secretModel);
-        var status = await _keyVaultService.RecoverSecretAsync(secretModel.SecretFilter, secretModel.UserName, cancellationToken);
-
+        var status = await _keyVaultService.RecoverSecretAsync(secretModel, cancellationToken);
         return Ok(status);
     }
 
