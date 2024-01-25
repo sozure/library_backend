@@ -14,11 +14,11 @@ public interface IKeyVaultService
         CancellationToken cancellationToken = default
         );
     Task<AdapterResponseModel<IEnumerable<SecretResult>>> GetSecretsAsync(
-        SecretModel secretModel, 
+        SecretModel secretModel,
         CancellationToken cancellationToken = default
         );
     Task<AdapterResponseModel<IEnumerable<DeletedSecretResult>>> GetDeletedSecretsAsync(
-        SecretModel secretModel, 
+        SecretModel secretModel,
         CancellationToken cancellationToken = default
         );
     Task<AdapterStatus> RecoverSecretAsync(SecretModel secretModel, CancellationToken cancellationToken = default);

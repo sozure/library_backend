@@ -15,7 +15,7 @@ public partial class VariableService
         CancellationToken cancellationToken = default
         )
     {
-        var vgEntity = await _variableGroupConnectionRepository.GetAllAsync(cancellationToken);
+        var vgEntity = await GetAllAsync(variableGroupUpdateModel, cancellationToken);
         var status = vgEntity.Status;
 
         if (status == AdapterStatus.Success)
@@ -39,7 +39,14 @@ public partial class VariableService
                 }
             }
 
-            var finalStatus = await UpdateVariableGroupsAsync(newValue, filteredVariableGroups, keyFilter, valueRegex, cancellationToken);
+            var finalStatus = await UpdateVariableGroupsAsync(
+                variableGroupUpdateModel,
+                newValue,
+                filteredVariableGroups,
+                keyFilter,
+                valueRegex,
+                cancellationToken
+                );
 
             if (finalStatus == AdapterStatus.Success)
             {
@@ -49,7 +56,7 @@ public partial class VariableService
                 {
                     VariableGroupFilter = variableGroupFilter,
                     Key = keyFilter,
-                    Project = _project,
+                    Project = variableGroupUpdateModel.Project,
                     Organization = org,
                     User = variableGroupUpdateModel.UserName,
                     Date = DateTime.UtcNow,
@@ -68,6 +75,7 @@ public partial class VariableService
     }
 
     private async Task<AdapterStatus> UpdateVariableGroupsAsync(
+        VariableGroupModel model,
         string newValue,
         IEnumerable<VariableGroup> filteredVariableGroups,
         string keyFilter,
@@ -87,12 +95,7 @@ public partial class VariableService
             {
                 updateCounter2++;
                 var variableGroupParameters = GetVariableGroupParameters(filteredVariableGroup, variableGroupName);
-
-                var updateStatus = await _variableGroupConnectionRepository.UpdateAsync(
-                    variableGroupParameters,
-                    filteredVariableGroup.Id,
-                    cancellationToken
-                    );
+                var updateStatus = await UpdateAsync(model, variableGroupParameters, filteredVariableGroup.Id, cancellationToken);
 
                 if (updateStatus == AdapterStatus.Success)
                 {

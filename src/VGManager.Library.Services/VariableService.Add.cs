@@ -15,7 +15,7 @@ public partial class VariableService
         CancellationToken cancellationToken = default
         )
     {
-        var vgEntity = await _variableGroupConnectionRepository.GetAllAsync(cancellationToken);
+        var vgEntity = await GetAllAsync(variableGroupAddModel, cancellationToken);
         var status = vgEntity.Status;
 
         if (status == AdapterStatus.Success)
@@ -26,7 +26,7 @@ public partial class VariableService
             var value = variableGroupAddModel.Value;
             var filteredVariableGroups = CollectVariableGroups(vgEntity, keyFilter, variableGroupFilter);
 
-            var finalStatus = await AddVariablesAsync(filteredVariableGroups, key, value, cancellationToken);
+            var finalStatus = await AddVariablesAsync(variableGroupAddModel, filteredVariableGroups, key, value, cancellationToken);
 
             if (finalStatus == AdapterStatus.Success)
             {
@@ -36,7 +36,7 @@ public partial class VariableService
                     VariableGroupFilter = variableGroupFilter,
                     Key = key,
                     Value = value,
-                    Project = _project,
+                    Project = variableGroupAddModel.Project,
                     Organization = org,
                     User = variableGroupAddModel.UserName,
                     Date = DateTime.UtcNow
@@ -88,6 +88,7 @@ public partial class VariableService
     }
 
     private async Task<AdapterStatus> AddVariablesAsync(
+        VariableGroupModel model,
         IEnumerable<VariableGroup> filteredVariableGroups,
         string key,
         string value,
@@ -101,7 +102,7 @@ public partial class VariableService
             counter++;
             try
             {
-                var success = await AddVariableAsync(key, value, filteredVariableGroup, cancellationToken);
+                var success = await AddVariableAsync(model, key, value, filteredVariableGroup, cancellationToken);
 
                 if (success)
                 {
@@ -133,17 +134,19 @@ public partial class VariableService
         return updateCounter == counter ? AdapterStatus.Success : AdapterStatus.Unknown;
     }
 
-    private async Task<bool> AddVariableAsync(string key, string value, VariableGroup filteredVariableGroup, CancellationToken cancellationToken)
+    private async Task<bool> AddVariableAsync(
+        VariableGroupModel model,
+        string key,
+        string value,
+        VariableGroup filteredVariableGroup,
+        CancellationToken cancellationToken
+        )
     {
         var variableGroupName = filteredVariableGroup.Name;
         filteredVariableGroup.Variables.Add(key, value);
-        var variableGroupParameters = GetVariableGroupParameters(filteredVariableGroup, variableGroupName);
 
-        var updateStatus = await _variableGroupConnectionRepository.UpdateAsync(
-            variableGroupParameters,
-            filteredVariableGroup.Id,
-            cancellationToken
-            );
+        var variableGroupParameters = GetVariableGroupParameters(filteredVariableGroup, variableGroupName);
+        var updateStatus = await UpdateAsync(model, variableGroupParameters, filteredVariableGroup.Id, cancellationToken);
 
         if (updateStatus == AdapterStatus.Success)
         {

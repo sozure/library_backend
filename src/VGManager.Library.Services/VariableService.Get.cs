@@ -15,7 +15,7 @@ public partial class VariableService
         CancellationToken cancellationToken = default
         )
     {
-        var vgEntity = await _variableGroupConnectionRepository.GetAllAsync(cancellationToken);
+        var vgEntity = await GetAllAsync(variableGroupModel, cancellationToken);
         var status = vgEntity.Status;
 
         if (status == AdapterStatus.Success)
@@ -84,7 +84,7 @@ public partial class VariableService
             foreach (var filteredVariableGroup in filteredVariableGroups)
             {
                 matchedVariables.AddRange(
-                    GetVariables(keyRegex, valueRegex, filteredVariableGroup)
+                    GetVariables(keyRegex, valueRegex, variableGroupModel.Project, filteredVariableGroup)
                     );
             }
         }
@@ -93,7 +93,7 @@ public partial class VariableService
             foreach (var filteredVariableGroup in filteredVariableGroups)
             {
                 matchedVariables.AddRange(
-                    GetVariables(keyFilter, valueRegex, filteredVariableGroup)
+                    GetVariables(keyFilter, valueRegex, variableGroupModel.Project, filteredVariableGroup)
                     );
             }
         }
@@ -108,26 +108,29 @@ public partial class VariableService
     private IEnumerable<VariableResult> GetVariables(
         string keyFilter,
         Regex? valueRegex,
+        string project,
         VariableGroup filteredVariableGroup
         )
     {
         var filteredVariables = _variableFilterService.Filter(filteredVariableGroup.Variables, keyFilter);
-        return CollectVariables(valueRegex, filteredVariableGroup, filteredVariables);
+        return CollectVariables(valueRegex, filteredVariableGroup, project, filteredVariables);
     }
 
     private IEnumerable<VariableResult> GetVariables(
         Regex keyRegex,
         Regex? valueRegex,
+        string project,
         VariableGroup filteredVariableGroup
         )
     {
         var filteredVariables = _variableFilterService.Filter(filteredVariableGroup.Variables, keyRegex);
-        return CollectVariables(valueRegex, filteredVariableGroup, filteredVariables);
+        return CollectVariables(valueRegex, filteredVariableGroup, project, filteredVariables);
     }
 
     private IEnumerable<VariableResult> CollectVariables(
         Regex? valueRegex,
         VariableGroup filteredVariableGroup,
+        string project,
         IEnumerable<KeyValuePair<string, VariableValue>> filteredVariables
         )
     {
@@ -140,14 +143,14 @@ public partial class VariableService
                 if (valueRegex.IsMatch(variableValue.ToLower()))
                 {
                     result.AddRange(
-                        AddVariableResult(filteredVariableGroup, filteredVariable, variableValue)
+                        AddVariableResult(filteredVariableGroup, filteredVariable, variableValue, project)
                         );
                 }
             }
             else
             {
                 result.AddRange(
-                    AddVariableResult(filteredVariableGroup, filteredVariable, variableValue)
+                    AddVariableResult(filteredVariableGroup, filteredVariable, variableValue, project)
                     );
             }
         }
@@ -157,7 +160,8 @@ public partial class VariableService
     private IEnumerable<VariableResult> AddVariableResult(
         VariableGroup filteredVariableGroup,
         KeyValuePair<string, VariableValue> filteredVariable,
-        string variableValue
+        string variableValue,
+        string project
         )
     {
         var subResult = new List<VariableResult>();
@@ -166,7 +170,7 @@ public partial class VariableService
             var azProviderData = filteredVariableGroup.ProviderData as AzureKeyVaultVariableGroupProviderData;
             subResult.Add(new VariableResult()
             {
-                Project = _project ?? string.Empty,
+                Project = project,
                 SecretVariableGroup = true,
                 VariableGroupName = filteredVariableGroup.Name,
                 VariableGroupKey = filteredVariable.Key,
@@ -177,7 +181,7 @@ public partial class VariableService
         {
             subResult.Add(new VariableResult()
             {
-                Project = _project ?? string.Empty,
+                Project = project,
                 SecretVariableGroup = false,
                 VariableGroupName = filteredVariableGroup.Name,
                 VariableGroupKey = filteredVariable.Key,

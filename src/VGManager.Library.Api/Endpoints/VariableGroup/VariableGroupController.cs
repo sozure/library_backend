@@ -103,7 +103,6 @@ public partial class VariableGroupController : ControllerBase
     )
     {
         var vgServiceModel = _mapper.Map<VariableGroupUpdateModel>(request);
-        _variableService.SetupConnectionRepository(vgServiceModel);
         var status = await _variableService.UpdateVariableGroupsAsync(vgServiceModel, false, cancellationToken);
 
         return Ok(status);
@@ -132,9 +131,7 @@ public partial class VariableGroupController : ControllerBase
     )
     {
         var vgServiceModel = _mapper.Map<VariableGroupAddModel>(request);
-        _variableService.SetupConnectionRepository(vgServiceModel);
         var status = await _variableService.AddVariablesAsync(vgServiceModel, cancellationToken);
-
         return Ok(status);
     }
 
@@ -182,9 +179,7 @@ public partial class VariableGroupController : ControllerBase
     )
     {
         var vgServiceModel = _mapper.Map<VariableGroupModel>(request);
-        _variableService.SetupConnectionRepository(vgServiceModel);
         var status = await _variableService.DeleteVariablesAsync(vgServiceModel, false, cancellationToken);
-
         return Ok(status);
     }
 }

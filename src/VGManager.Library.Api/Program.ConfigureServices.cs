@@ -6,8 +6,6 @@ using System.Reflection;
 using VGManager.Adapter.Client.Extensions;
 using VGManager.Library.Api;
 using VGManager.Library.Api.HealthChecks;
-using VGManager.Library.AzureAdapter;
-using VGManager.Library.AzureAdapter.Interfaces;
 using VGManager.Library.Repositories.Boilerplate;
 using VGManager.Library.Repositories.DbContexts;
 using VGManager.Library.Repositories.Interfaces.SecretRepositories;
@@ -108,7 +106,6 @@ static partial class Program
         services.AddScoped<IVariableGroupService, VariableGroupService>();
         services.AddScoped<IKeyVaultService, KeyVaultService>();
         services.AddScoped<IProjectService, ProjectService>();
-
-        services.AddScoped<IVariableGroupAdapter, VariableGroupAdapter>();
+        services.AddScoped<IAdapterCommunicator, AdapterCommunicator>();
     }
 }

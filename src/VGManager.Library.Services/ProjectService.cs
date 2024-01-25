@@ -1,6 +1,5 @@
 using System.Text.Json;
 using VGManager.Adapter.Azure.Services.Requests;
-using VGManager.Adapter.Client.Interfaces;
 using VGManager.Adapter.Models.Kafka;
 using VGManager.Adapter.Models.Models;
 using VGManager.Adapter.Models.Requests;
@@ -8,23 +7,22 @@ using VGManager.Adapter.Models.Response;
 using VGManager.Adapter.Models.StatusEnums;
 using VGManager.Library.Services.Interfaces;
 using VGManager.Library.Services.Models.Common;
-using VGManager.Library.Services.Models.Projects;
 
 namespace VGManager.Library.Services;
 
 public class ProjectService : IProjectService
 {
-    private readonly IVGManagerAdapterClientService _clientService;
+    private readonly IAdapterCommunicator _adapterCommunicator;
 
     public ProjectService(
-        IVGManagerAdapterClientService clientService
+        IAdapterCommunicator adapterCommunicator
         )
     {
-        _clientService = clientService;
+        _adapterCommunicator = adapterCommunicator;
     }
 
     public async Task<AdapterResponseModel<IEnumerable<ProjectRequest>>> GetProjectsAsync(
-        BaseModel projectModel, 
+        BaseModel projectModel,
         CancellationToken cancellationToken = default
         )
     {
@@ -34,10 +32,11 @@ public class ProjectService : IProjectService
             PAT = projectModel.PAT
         };
 
-        (bool isSuccess, string response) = await _clientService.SendAndReceiveMessageAsync(
+        (var isSuccess, var response) = await _adapterCommunicator.CommunicateWithAdapterAsync(
+            request,
             CommandTypes.GetProjectsRequest,
-            JsonSerializer.Serialize(request),
-            cancellationToken);
+            cancellationToken
+            );
 
         if (!isSuccess)
         {
