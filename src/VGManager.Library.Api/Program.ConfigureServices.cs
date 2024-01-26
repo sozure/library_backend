@@ -106,6 +106,7 @@ static partial class Program
         services.AddScoped<IVariableGroupService, VariableGroupService>();
         services.AddScoped<IKeyVaultService, KeyVaultService>();
         services.AddScoped<IProjectService, ProjectService>();
+        services.AddScoped<IChangeService, ChangeService>();
         services.AddScoped<IAdapterCommunicator, AdapterCommunicator>();
     }
 }
