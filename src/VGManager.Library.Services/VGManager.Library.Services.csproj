@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
       <ProjectGuid>B11A0E3B-1521-465A-BA95-8D1A4A25B2B4</ProjectGuid>
@@ -10,10 +10,33 @@
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="12.0.1" />
       <PackageReference Include="VGManager.Adapter.Client" Version="1.2.0" />
-      <PackageReference Include="VGManager.Adapter.Models" Version="1.4.0" />
+      <PackageReference Include="VGManager.Adapter.Models" Version="1.7.0" />
   </ItemGroup>
 
-  <ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Azure.Identity" Version="1.10.4" />
+        <PackageReference Include="Azure.ResourceManager.KeyVault" Version="1.2.0" />
+        <PackageReference Include="Azure.Security.KeyVault.Administration" Version="4.3.0" />
+        <PackageReference Include="Azure.Security.KeyVault.Secrets" Version="4.5.0" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
+        <PackageReference Include="Microsoft.TeamFoundation.DistributedTask.WebApi" Version="19.228.0-preview" />
+        <PackageReference Include="Microsoft.TeamFoundationServer.Client" Version="19.228.0-preview" />
+        <PackageReference Include="Azure.Identity" Version="1.10.4" />
+        <PackageReference Include="Azure.ResourceManager.KeyVault" Version="1.2.0" />
+        <PackageReference Include="Azure.Security.KeyVault.Administration" Version="4.3.0" />
+        <PackageReference Include="Azure.Security.KeyVault.Secrets" Version="4.5.0" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
+        <PackageReference Include="Microsoft.TeamFoundation.DistributedTask.WebApi" Version="19.228.0-preview" />
+        <PackageReference Include="Microsoft.TeamFoundationServer.Client" Version="19.228.0-preview" />
+        <PackageReference Include="Microsoft.VisualStudio.Services.Client" Version="19.228.0-preview" />
+        <PackageReference Include="Microsoft.VisualStudio.Services.ExtensionManagement.WebApi" Version="19.228.0-preview" />
+        <PackageReference Include="Microsoft.VisualStudio.Services.InteractiveClient" Version="19.228.0-preview" />
+        <PackageReference Include="Microsoft.VisualStudio.Services.Release.Client" Version="19.228.0-preview" />
+        <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
+        <PackageReference Include="System.Runtime" Version="4.3.1" />
+    </ItemGroup>
+
+    <ItemGroup>
     <ProjectReference Include="..\VGManager.Library.Repositories\VGManager.Library.Repositories.csproj" />
   </ItemGroup>
 

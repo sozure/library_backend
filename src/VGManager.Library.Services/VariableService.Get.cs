@@ -15,7 +15,7 @@ public partial class VariableService
         CancellationToken cancellationToken = default
         )
     {
-        var vgEntity = await GetAllAsync(variableGroupModel, cancellationToken);
+        var vgEntity = await GetAllAsync(variableGroupModel, true, cancellationToken);
         var status = vgEntity.Status;
 
         if (status == AdapterStatus.Success)
@@ -39,10 +39,6 @@ public partial class VariableService
         )
     {
         var matchedVariables = new List<VariableResult>();
-        var filteredVariableGroups = variableGroupModel.ContainsSecrets ?
-                        _variableFilterService.Filter(vgEntity.Data, variableGroupModel.VariableGroupFilter) :
-                        _variableFilterService.FilterWithoutSecrets(true, variableGroupModel.VariableGroupFilter, vgEntity.Data);
-
         var valueFilter = variableGroupModel.ValueFilter;
         var keyFilter = variableGroupModel.KeyFilter;
         Regex? valueRegex = null;
@@ -81,7 +77,7 @@ public partial class VariableService
                 };
             }
 
-            foreach (var filteredVariableGroup in filteredVariableGroups)
+            foreach (var filteredVariableGroup in vgEntity.Data)
             {
                 matchedVariables.AddRange(
                     GetVariables(keyRegex, valueRegex, variableGroupModel.Project, filteredVariableGroup)
@@ -90,7 +86,7 @@ public partial class VariableService
         }
         else
         {
-            foreach (var filteredVariableGroup in filteredVariableGroups)
+            foreach (var filteredVariableGroup in vgEntity.Data)
             {
                 matchedVariables.AddRange(
                     GetVariables(keyFilter, valueRegex, variableGroupModel.Project, filteredVariableGroup)

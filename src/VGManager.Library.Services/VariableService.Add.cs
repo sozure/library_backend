@@ -15,7 +15,8 @@ public partial class VariableService
         CancellationToken cancellationToken = default
         )
     {
-        var vgEntity = await GetAllAsync(variableGroupAddModel, cancellationToken);
+        variableGroupAddModel.ContainsSecrets = false;
+        var vgEntity = await GetAllAsync(variableGroupAddModel, true, cancellationToken);
         var status = vgEntity.Status;
 
         if (status == AdapterStatus.Success)
@@ -24,7 +25,7 @@ public partial class VariableService
             var variableGroupFilter = variableGroupAddModel.VariableGroupFilter;
             var key = variableGroupAddModel.Key;
             var value = variableGroupAddModel.Value;
-            var filteredVariableGroups = CollectVariableGroups(vgEntity, keyFilter, variableGroupFilter);
+            var filteredVariableGroups = CollectVariableGroups(vgEntity, keyFilter);
 
             var finalStatus = await AddVariablesAsync(variableGroupAddModel, filteredVariableGroups, key, value, cancellationToken);
 
@@ -56,8 +57,7 @@ public partial class VariableService
 
     private IEnumerable<VariableGroup> CollectVariableGroups(
         AdapterResponseModel<IEnumerable<VariableGroup>> vgEntity,
-        string? keyFilter,
-        string variableGroupFilter
+        string? keyFilter
         )
     {
         IEnumerable<VariableGroup> filteredVariableGroups;
@@ -67,21 +67,19 @@ public partial class VariableService
             {
                 var regex = new Regex(keyFilter.ToLower(), RegexOptions.None, TimeSpan.FromMilliseconds(5));
 
-                filteredVariableGroups = _variableFilterService.FilterWithoutSecrets(true, variableGroupFilter, vgEntity.Data)
-                .Select(vg => vg)
+                filteredVariableGroups = vgEntity.Data.Select(vg => vg)
                 .Where(vg => vg.Variables.Keys.ToList().FindAll(key => regex.IsMatch(key.ToLower())).Count == 0);
             }
             catch (RegexParseException ex)
             {
                 _logger.LogError(ex, "Couldn't parse and create regex. Value: {value}.", keyFilter);
-                filteredVariableGroups = _variableFilterService.FilterWithoutSecrets(true, variableGroupFilter, vgEntity.Data)
-                .Select(vg => vg)
+                filteredVariableGroups = vgEntity.Data.Select(vg => vg)
                 .Where(vg => vg.Variables.Keys.ToList().FindAll(key => keyFilter.ToLower() == key.ToLower()).Count == 0);
             }
         }
         else
         {
-            filteredVariableGroups = _variableFilterService.FilterWithoutSecrets(true, variableGroupFilter, vgEntity.Data);
+            return vgEntity.Data;
         }
 
         return filteredVariableGroups;

@@ -2,7 +2,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.TeamFoundation.DistributedTask.WebApi;
 using System.Text.Json;
-using VGManager.Adapter.Azure.Services.Requests;
 using VGManager.Adapter.Models.Kafka;
 using VGManager.Adapter.Models.Models;
 using VGManager.Adapter.Models.Requests;
@@ -48,14 +47,18 @@ public partial class VariableService : IVariableService
 
     private async Task<AdapterResponseModel<IEnumerable<VariableGroup>>> GetAllAsync(
         VariableGroupModel variableGroupModel,
+        bool filterAsRegex,
         CancellationToken cancellationToken
         )
     {
-        var request = new ExtendedBaseRequest()
+        var request = new GetVGRequest()
         {
             Organization = variableGroupModel.Organization,
             PAT = variableGroupModel.PAT,
-            Project = variableGroupModel.Project
+            Project = variableGroupModel.Project,
+            ContainsSecrets = variableGroupModel.ContainsSecrets,
+            VariableGroupFilter = variableGroupModel.VariableGroupFilter,
+            FilterAsRegex = filterAsRegex
         };
 
         (var isSuccess, var response) = await _adapterCommunicator.CommunicateWithAdapterAsync(
@@ -86,7 +89,7 @@ public partial class VariableService : IVariableService
         CancellationToken cancellationToken
         )
     {
-        var request = new VGRequest()
+        var request = new UpdateVGRequest()
         {
             Organization = variableGroupModel.Organization,
             PAT = variableGroupModel.PAT,

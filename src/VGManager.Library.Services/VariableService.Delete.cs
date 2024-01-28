@@ -14,14 +14,14 @@ public partial class VariableService
         CancellationToken cancellationToken = default
         )
     {
-        var vgEntity = await GetAllAsync(variableGroupModel, cancellationToken);
+        variableGroupModel.ContainsSecrets = false;
+        var vgEntity = await GetAllAsync(variableGroupModel, filterAsRegex, cancellationToken);
         var status = vgEntity.Status;
 
         if (status == AdapterStatus.Success)
         {
             var variableGroupFilter = variableGroupModel.VariableGroupFilter;
-            var filteredVariableGroups = _variableFilterService.FilterWithoutSecrets(filterAsRegex, variableGroupFilter, vgEntity.Data);
-            var finalStatus = await DeleteVariablesAsync(variableGroupModel, filteredVariableGroups, cancellationToken);
+            var finalStatus = await DeleteVariablesAsync(variableGroupModel, vgEntity.Data, cancellationToken);
             if (finalStatus == AdapterStatus.Success)
             {
                 var org = variableGroupModel.Organization;

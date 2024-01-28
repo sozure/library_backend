@@ -15,13 +15,13 @@ public partial class VariableService
         CancellationToken cancellationToken = default
         )
     {
-        var vgEntity = await GetAllAsync(variableGroupUpdateModel, cancellationToken);
+        variableGroupUpdateModel.ContainsSecrets = false;
+        var vgEntity = await GetAllAsync(variableGroupUpdateModel, filterAsRegex, cancellationToken);
         var status = vgEntity.Status;
 
         if (status == AdapterStatus.Success)
         {
             var variableGroupFilter = variableGroupUpdateModel.VariableGroupFilter;
-            var filteredVariableGroups = _variableFilterService.FilterWithoutSecrets(filterAsRegex, variableGroupFilter, vgEntity.Data);
             var keyFilter = variableGroupUpdateModel.KeyFilter;
             var valueFilter = variableGroupUpdateModel.ValueFilter;
             var newValue = variableGroupUpdateModel.NewValue;
@@ -42,7 +42,7 @@ public partial class VariableService
             var finalStatus = await UpdateVariableGroupsAsync(
                 variableGroupUpdateModel,
                 newValue,
-                filteredVariableGroups,
+                vgEntity.Data,
                 keyFilter,
                 valueRegex,
                 cancellationToken
