@@ -1,5 +1,5 @@
 namespace VGManager.Library.Services.Models.Secrets.Requests;
-public abstract class SecretBaseModel
+public class SecretBaseModel
 {
     public string TenantId { get; set; } = null!;
     public string ClientId { get; set; } = null!;

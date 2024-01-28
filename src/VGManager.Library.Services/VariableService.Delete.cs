@@ -14,14 +14,14 @@ public partial class VariableService
         CancellationToken cancellationToken = default
         )
     {
-        var vgEntity = await _variableGroupConnectionRepository.GetAllAsync(cancellationToken);
+        variableGroupModel.ContainsSecrets = false;
+        var vgEntity = await GetAllAsync(variableGroupModel, filterAsRegex, cancellationToken);
         var status = vgEntity.Status;
 
         if (status == AdapterStatus.Success)
         {
             var variableGroupFilter = variableGroupModel.VariableGroupFilter;
-            var filteredVariableGroups = _variableFilterService.FilterWithoutSecrets(filterAsRegex, variableGroupFilter, vgEntity.Data);
-            var finalStatus = await DeleteVariablesAsync(variableGroupModel, filteredVariableGroups, cancellationToken);
+            var finalStatus = await DeleteVariablesAsync(variableGroupModel, vgEntity.Data, cancellationToken);
             if (finalStatus == AdapterStatus.Success)
             {
                 var org = variableGroupModel.Organization;
@@ -29,7 +29,7 @@ public partial class VariableService
                 {
                     VariableGroupFilter = variableGroupFilter,
                     Key = variableGroupModel.KeyFilter,
-                    Project = _project,
+                    Project = variableGroupModel.Project,
                     Organization = org,
                     User = variableGroupModel.UserName,
                     Date = DateTime.UtcNow
@@ -71,7 +71,8 @@ public partial class VariableService
                 deletionCounter1++;
                 var variableGroupParameters = GetVariableGroupParameters(filteredVariableGroup, variableGroupName);
 
-                var updateStatus = await _variableGroupConnectionRepository.UpdateAsync(
+                var updateStatus = await UpdateAsync(
+                    variableGroupModel,
                     variableGroupParameters,
                     filteredVariableGroup.Id,
                     cancellationToken

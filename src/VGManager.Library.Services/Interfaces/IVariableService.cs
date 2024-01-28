@@ -7,8 +7,6 @@ namespace VGManager.Library.Services.Interfaces;
 
 public interface IVariableService
 {
-    void SetupConnectionRepository(VariableGroupModel variableGroupModel);
-
     Task<AdapterStatus> UpdateVariableGroupsAsync(
         VariableGroupUpdateModel variableGroupUpdateModel,
         bool filterAsRegex,

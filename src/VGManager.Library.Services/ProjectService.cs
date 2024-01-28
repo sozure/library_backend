@@ -1,32 +1,56 @@
-using AutoMapper;
+using System.Text.Json;
+using VGManager.Adapter.Models.Kafka;
 using VGManager.Adapter.Models.Models;
-using VGManager.Library.AzureAdapter.Interfaces;
+using VGManager.Adapter.Models.Requests;
+using VGManager.Adapter.Models.Response;
+using VGManager.Adapter.Models.StatusEnums;
 using VGManager.Library.Services.Interfaces;
 using VGManager.Library.Services.Models.Common;
-using VGManager.Library.Services.Models.Projects;
 
 namespace VGManager.Library.Services;
 
 public class ProjectService : IProjectService
 {
-    private readonly IProjectAdapter _projectRepository;
-    private readonly IMapper _mapper;
+    private readonly IAdapterCommunicator _adapterCommunicator;
 
-    public ProjectService(IProjectAdapter projectRepository, IMapper mapper)
+    public ProjectService(
+        IAdapterCommunicator adapterCommunicator
+        )
     {
-        _projectRepository = projectRepository;
-        _mapper = mapper;
+        _adapterCommunicator = adapterCommunicator;
     }
 
-    public async Task<AdapterResponseModel<IEnumerable<ProjectResult>>> GetProjectsAsync(BaseModel projectModel, CancellationToken cancellationToken = default)
+    public async Task<AdapterResponseModel<IEnumerable<ProjectRequest>>> GetProjectsAsync(
+        BaseModel projectModel,
+        CancellationToken cancellationToken = default
+        )
     {
-        var url = $"https://dev.azure.com/{projectModel.Organization}";
-        var projectsEntity = await _projectRepository.GetProjectsAsync(url, projectModel.PAT, cancellationToken);
-
-        return new()
+        var request = new BaseRequest()
         {
-            Status = projectsEntity.Status,
-            Data = _mapper.Map<IEnumerable<ProjectResult>>(projectsEntity.Data)
+            Organization = projectModel.Organization,
+            PAT = projectModel.PAT
+        };
+
+        (var isSuccess, var response) = await _adapterCommunicator.CommunicateWithAdapterAsync(
+            request,
+            CommandTypes.GetProjectsRequest,
+            cancellationToken
+            );
+
+        if (!isSuccess)
+        {
+            return new AdapterResponseModel<IEnumerable<ProjectRequest>>()
+            {
+                Data = Enumerable.Empty<ProjectRequest>()
+            };
+        }
+
+        var result = JsonSerializer.Deserialize<BaseResponse<AdapterResponseModel<IEnumerable<ProjectRequest>>>>(response)?.Data;
+
+        return result ?? new AdapterResponseModel<IEnumerable<ProjectRequest>>()
+        {
+            Status = AdapterStatus.Unknown,
+            Data = Enumerable.Empty<ProjectRequest>()
         };
     }
 }
