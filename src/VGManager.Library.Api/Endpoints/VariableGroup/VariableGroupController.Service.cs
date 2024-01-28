@@ -1,9 +1,9 @@
 using VGManager.Adapter.Models.Models;
+using VGManager.Adapter.Models.Requests;
 using VGManager.Adapter.Models.StatusEnums;
 using VGManager.Library.Api.Endpoints.VariableGroup.Request;
 using VGManager.Library.Api.Endpoints.VariableGroup.Response;
 using VGManager.Library.Services.Models.Common;
-using VGManager.Library.Services.Models.Projects;
 using VGManager.Library.Services.Models.VariableGroups.Requests;
 
 namespace VGManager.Library.Api.Endpoints.VariableGroup;
@@ -29,7 +29,10 @@ public partial class VariableGroupController
         };
     }
 
-    private async Task<AdapterResponseModel<IEnumerable<ProjectResult>>> GetProjectsAsync(VariableRequest request, CancellationToken cancellationToken)
+    private async Task<AdapterResponseModel<IEnumerable<ProjectRequest>>> GetProjectsAsync(
+        VariableRequest request,
+        CancellationToken cancellationToken
+        )
     {
         var projectModel = new BaseModel
         {
@@ -47,8 +50,6 @@ public partial class VariableGroupController
         )
     {
         var vgServiceModel = _mapper.Map<VariableGroupModel>(request);
-
-        _variableService.SetupConnectionRepository(vgServiceModel);
         var status = await _variableService.DeleteVariablesAsync(vgServiceModel, true, cancellationToken);
         var variableGroupResultModel = await _variableService.GetVariablesAsync(vgServiceModel, cancellationToken);
 
@@ -69,8 +70,6 @@ public partial class VariableGroupController
     private async Task<AdapterResponseModel<List<VariableResponse>>> GetBaseResultAsync(VariableRequest request, CancellationToken cancellationToken)
     {
         var vgServiceModel = _mapper.Map<VariableGroupModel>(request);
-
-        _variableService.SetupConnectionRepository(vgServiceModel);
         var variableGroupResultsModel = await _variableService.GetVariablesAsync(vgServiceModel, cancellationToken);
 
         var result = new AdapterResponseModel<List<VariableResponse>>()
@@ -88,9 +87,12 @@ public partial class VariableGroupController
         )
     {
         var vgServiceModel = _mapper.Map<VariableGroupModel>(request);
-
-        _variableService.SetupConnectionRepository(vgServiceModel);
-        var variableGroupResultsModel = await _vgService.GetVariableGroupsAsync(vgServiceModel, request.ContainsKey, cancellationToken);
+        var variableGroupResultsModel = await _vgService.GetVariableGroupsAsync(
+            vgServiceModel,
+            request.PotentialVariableGroups?.Select(vgs => vgs.Name) ?? null!,
+            request.ContainsKey,
+            cancellationToken
+            );
 
         var result = new List<VariableGroupResponse>();
 
@@ -114,8 +116,6 @@ public partial class VariableGroupController
     private async Task<AdapterResponseModel<List<VariableResponse>>> GetAddResultAsync(VariableAddRequest request, CancellationToken cancellationToken)
     {
         var vgServiceModel = _mapper.Map<VariableGroupAddModel>(request);
-
-        _variableService.SetupConnectionRepository(vgServiceModel);
         var status = await _variableService.AddVariablesAsync(vgServiceModel, cancellationToken);
         vgServiceModel.KeyFilter = vgServiceModel.Key;
         vgServiceModel.ValueFilter = vgServiceModel.Value;
@@ -141,8 +141,6 @@ public partial class VariableGroupController
         )
     {
         var vgServiceModel = _mapper.Map<VariableGroupUpdateModel>(request);
-
-        _variableService.SetupConnectionRepository(vgServiceModel);
         var status = await _variableService.UpdateVariableGroupsAsync(vgServiceModel, true, cancellationToken);
 
         vgServiceModel.ValueFilter = vgServiceModel.NewValue;

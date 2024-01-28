@@ -1,12 +1,11 @@
+using CorrelationId.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Infrastructure;
 using System.Reflection;
+using VGManager.Adapter.Client.Extensions;
 using VGManager.Library.Api;
 using VGManager.Library.Api.HealthChecks;
-using VGManager.Library.AzureAdapter;
-using VGManager.Library.AzureAdapter.Helper;
-using VGManager.Library.AzureAdapter.Interfaces;
 using VGManager.Library.Repositories.Boilerplate;
 using VGManager.Library.Repositories.DbContexts;
 using VGManager.Library.Repositories.Interfaces.SecretRepositories;
@@ -24,6 +23,11 @@ static partial class Program
     {
         var configuration = self.Configuration;
         var services = self.Services;
+
+        services.AddDefaultCorrelationId(options =>
+        {
+            options.AddToLoggingScope = true;
+        });
 
         services.AddCors(options =>
         {
@@ -54,7 +58,7 @@ static partial class Program
 
         services.AddAutoMapper(
             typeof(Program),
-            typeof(ServiceProfiles.ProjectProfile)
+            typeof(ServiceProfiles.ChangesProfile)
         );
 
         services.AddOptions<OrganizationSettings>()
@@ -89,19 +93,20 @@ static partial class Program
             );
         }, ServiceLifetime.Scoped);
 
+        services.SetupVGManagerAdapterClient(configuration);
+
         services.AddScoped<IVGAddColdRepository, VGAddColdRepository>();
         services.AddScoped<IVGDeleteColdRepository, VGDeleteColdRepository>();
         services.AddScoped<IVGUpdateColdRepository, VGUpdateColdRepository>();
         services.AddScoped<IKeyVaultCopyColdRepository, KeyVaultCopyColdRepository>();
         services.AddScoped<ISecretChangeColdRepository, SecretChangeColdRepository>();
+
         services.AddScoped<IVariableService, VariableService>();
         services.AddScoped<IVariableFilterService, VariableFilterService>();
         services.AddScoped<IVariableGroupService, VariableGroupService>();
         services.AddScoped<IKeyVaultService, KeyVaultService>();
         services.AddScoped<IProjectService, ProjectService>();
-        services.AddScoped<IVariableGroupAdapter, VariableGroupAdapter>();
-        services.AddScoped<IProjectAdapter, ProjectAdapter>();
-        services.AddScoped<IKeyVaultAdapter, KeyVaultAdapter>();
-        services.AddScoped<IHttpClientProvider, HttpClientProvider>();
+        services.AddScoped<IChangeService, ChangeService>();
+        services.AddScoped<IAdapterCommunicator, AdapterCommunicator>();
     }
 }

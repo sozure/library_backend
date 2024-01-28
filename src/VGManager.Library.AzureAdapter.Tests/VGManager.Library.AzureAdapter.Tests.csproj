@@ -10,8 +10,4 @@
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\VGManager.Library.AzureAdapter\VGManager.Library.AzureAdapter.csproj" />
-  </ItemGroup>
-
 </Project>

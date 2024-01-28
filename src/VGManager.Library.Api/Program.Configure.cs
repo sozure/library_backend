@@ -1,5 +1,7 @@
+using CorrelationId;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
+using VGManager.Communication.Kafka.Extensions;
 using VGManager.Library.Api;
 using VGManager.Library.Api.HealthChecks;
 using VGManager.Library.Repositories.DbContexts;
@@ -29,6 +31,9 @@ static partial class Program
         {
             Predicate = healthCheck => healthCheck.Tags.Contains("readiness")
         });
+
+        app.UseCorrelationIdValidation();
+        app.UseCorrelationId();
 
         await ApplyDbMigrationsAsync(app);
         RegisterStartupReadiness(app);

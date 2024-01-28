@@ -1,7 +1,12 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.TeamFoundation.DistributedTask.WebApi;
-using VGManager.Library.AzureAdapter.Interfaces;
+using System.Text.Json;
+using VGManager.Adapter.Models.Kafka;
+using VGManager.Adapter.Models.Models;
+using VGManager.Adapter.Models.Requests;
+using VGManager.Adapter.Models.Response;
+using VGManager.Adapter.Models.StatusEnums;
 using VGManager.Library.Repositories.Interfaces.VGRepositories;
 using VGManager.Library.Services.Interfaces;
 using VGManager.Library.Services.Models.VariableGroups.Requests;
@@ -11,19 +16,18 @@ namespace VGManager.Library.Services;
 
 public partial class VariableService : IVariableService
 {
-    private readonly IVariableGroupAdapter _variableGroupConnectionRepository;
+    private readonly IAdapterCommunicator _adapterCommunicator;
     private readonly IVGAddColdRepository _additionColdRepository;
     private readonly IVGDeleteColdRepository _deletionColdRepository;
     private readonly IVGUpdateColdRepository _editionColdRepository;
     private readonly IVariableFilterService _variableFilterService;
     private readonly OrganizationSettings _organizationSettings;
-    private string _project = null!;
     private readonly ILogger _logger;
 
     private readonly string SecretVGType = "AzureKeyVault";
 
     public VariableService(
-        IVariableGroupAdapter variableGroupConnectionRepository,
+        IAdapterCommunicator adapterCommunicator,
         IVGAddColdRepository additionColdRepository,
         IVGDeleteColdRepository deletedColdRepository,
         IVGUpdateColdRepository editionColdRepository,
@@ -32,7 +36,7 @@ public partial class VariableService : IVariableService
         ILogger<VariableService> logger
         )
     {
-        _variableGroupConnectionRepository = variableGroupConnectionRepository;
+        _adapterCommunicator = adapterCommunicator;
         _additionColdRepository = additionColdRepository;
         _deletionColdRepository = deletedColdRepository;
         _editionColdRepository = editionColdRepository;
@@ -41,15 +45,72 @@ public partial class VariableService : IVariableService
         _logger = logger;
     }
 
-    public void SetupConnectionRepository(VariableGroupModel variableGroupModel)
+    private async Task<AdapterResponseModel<IEnumerable<VariableGroup>>> GetAllAsync(
+        VariableGroupModel variableGroupModel,
+        bool filterAsRegex,
+        CancellationToken cancellationToken
+        )
     {
-        var project = variableGroupModel.Project;
-        _variableGroupConnectionRepository.Setup(
-            variableGroupModel.Organization,
-            project,
-            variableGroupModel.PAT
+        var request = new GetVGRequest()
+        {
+            Organization = variableGroupModel.Organization,
+            PAT = variableGroupModel.PAT,
+            Project = variableGroupModel.Project,
+            ContainsSecrets = variableGroupModel.ContainsSecrets,
+            VariableGroupFilter = variableGroupModel.VariableGroupFilter,
+            FilterAsRegex = filterAsRegex
+        };
+
+        (var isSuccess, var response) = await _adapterCommunicator.CommunicateWithAdapterAsync(
+            request,
+            CommandTypes.GetAllVGRequest,
+            cancellationToken
             );
-        _project = project;
+
+        if (!isSuccess)
+        {
+            return new() { Data = Enumerable.Empty<VariableGroup>() };
+        }
+
+        var adapterResult = JsonSerializer.Deserialize<BaseResponse<AdapterResponseModel<IEnumerable<VariableGroup>>>>(response)?.Data;
+
+        if (adapterResult is null)
+        {
+            return new() { Data = Enumerable.Empty<VariableGroup>() };
+        }
+
+        return adapterResult;
+    }
+
+    private async Task<AdapterStatus> UpdateAsync(
+        VariableGroupModel variableGroupModel,
+        VariableGroupParameters variableGroupParameters,
+        int variableGroupId,
+        CancellationToken cancellationToken
+        )
+    {
+        var request = new UpdateVGRequest()
+        {
+            Organization = variableGroupModel.Organization,
+            PAT = variableGroupModel.PAT,
+            Project = variableGroupModel.Project,
+            VariableGroupId = variableGroupId,
+            Params = variableGroupParameters
+        };
+
+        (var isSuccess, var response) = await _adapterCommunicator.CommunicateWithAdapterAsync(
+            request,
+            CommandTypes.UpdateVGRequest,
+            cancellationToken
+            );
+
+        if (!isSuccess)
+        {
+            return AdapterStatus.Unknown;
+        }
+
+        var adapterResult = JsonSerializer.Deserialize<BaseResponse<AdapterStatus>>(response)?.Data;
+        return adapterResult ?? AdapterStatus.Unknown;
     }
 
     private static VariableGroupParameters GetVariableGroupParameters(VariableGroup filteredVariableGroup, string variableGroupName)

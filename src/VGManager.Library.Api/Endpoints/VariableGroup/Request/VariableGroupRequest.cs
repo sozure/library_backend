@@ -6,4 +6,6 @@ public class VariableGroupRequest : VariableRequest
 {
     [Required]
     public bool ContainsKey { get; set; }
+
+    public VGModel[]? PotentialVariableGroups { get; set; }
 }

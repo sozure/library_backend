@@ -1,8 +1,11 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.TeamFoundation.DistributedTask.WebApi;
+using System.Text.Json;
+using VGManager.Adapter.Models.Kafka;
 using VGManager.Adapter.Models.Models;
+using VGManager.Adapter.Models.Requests;
+using VGManager.Adapter.Models.Response;
 using VGManager.Adapter.Models.StatusEnums;
-using VGManager.Library.AzureAdapter.Interfaces;
 using VGManager.Library.Services.Interfaces;
 using VGManager.Library.Services.Models.VariableGroups.Requests;
 
@@ -10,38 +13,61 @@ namespace VGManager.Library.Services;
 
 public class VariableGroupService : IVariableGroupService
 {
-    private readonly IVariableFilterService _variableFilterService;
-    private readonly IVariableGroupAdapter _variableGroupConnectionRepository;
+    private readonly IAdapterCommunicator _adapterCommunicator;
     private readonly ILogger _logger;
 
     public VariableGroupService(
-        IVariableFilterService variableFilterService,
-        IVariableGroupAdapter variableGroupConnectionRepository,
+        IAdapterCommunicator adapterCommunicator,
         ILogger<VariableGroupService> logger
         )
     {
-        _variableFilterService = variableFilterService;
-        _variableGroupConnectionRepository = variableGroupConnectionRepository;
+        _adapterCommunicator = adapterCommunicator;
         _logger = logger;
     }
 
     public async Task<AdapterResponseModel<IEnumerable<VariableGroup>>> GetVariableGroupsAsync(
         VariableGroupModel variableGroupModel,
+        IEnumerable<string>? potentialVariableGroups,
         bool containsKey,
         CancellationToken cancellationToken = default
         )
     {
         _logger.LogInformation("Get variable groups from {project} Azure project.", variableGroupModel.Project);
-        var vgEntity = await _variableGroupConnectionRepository.GetAllAsync(cancellationToken);
-        var status = vgEntity.Status;
+
+        var request = new GetVGRequest()
+        {
+            Organization = variableGroupModel.Organization,
+            PAT = variableGroupModel.PAT,
+            Project = variableGroupModel.Project,
+            ContainsSecrets = variableGroupModel.ContainsSecrets,
+            VariableGroupFilter = variableGroupModel.VariableGroupFilter,
+            FilterAsRegex = true,
+            PotentialVariableGroups = potentialVariableGroups?.ToArray(),
+        };
+
+        (var isSuccess, var response) = await _adapterCommunicator.CommunicateWithAdapterAsync(
+            request,
+            CommandTypes.GetAllVGRequest,
+            cancellationToken
+            );
+
+        if (!isSuccess)
+        {
+            return new() { Data = Enumerable.Empty<VariableGroup>() };
+        }
+
+        var adapterResult = JsonSerializer.Deserialize<BaseResponse<AdapterResponseModel<IEnumerable<VariableGroup>>>>(response)?.Data;
+
+        if (adapterResult is null)
+        {
+            return new() { Data = Enumerable.Empty<VariableGroup>() };
+        }
+
+        var status = adapterResult.Status;
 
         if (status == AdapterStatus.Success)
         {
-            var filteredVariableGroups = variableGroupModel.ContainsSecrets ?
-                        _variableFilterService.Filter(vgEntity.Data, variableGroupModel.VariableGroupFilter) :
-                        _variableFilterService.FilterWithoutSecrets(true, variableGroupModel.VariableGroupFilter, vgEntity.Data);
-
-            var result = GetVariableGroups(filteredVariableGroups, variableGroupModel.KeyFilter, containsKey);
+            var result = GetVariableGroups(adapterResult.Data, variableGroupModel.KeyFilter, containsKey);
             return GetResult(status, result);
         }
         else
