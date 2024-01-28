@@ -8,6 +8,7 @@ public interface IVariableGroupService
 {
     Task<AdapterResponseModel<IEnumerable<VariableGroup>>> GetVariableGroupsAsync(
         VariableGroupModel variableGroupModel,
+        IEnumerable<string>? potentialVariableGroups,
         bool containsKey,
         CancellationToken cancellationToken = default
         );

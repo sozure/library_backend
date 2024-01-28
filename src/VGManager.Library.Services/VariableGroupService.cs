@@ -1,9 +1,9 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.TeamFoundation.DistributedTask.WebApi;
 using System.Text.Json;
-using VGManager.Adapter.Azure.Services.Requests;
 using VGManager.Adapter.Models.Kafka;
 using VGManager.Adapter.Models.Models;
+using VGManager.Adapter.Models.Requests;
 using VGManager.Adapter.Models.Response;
 using VGManager.Adapter.Models.StatusEnums;
 using VGManager.Library.Services.Interfaces;
@@ -14,33 +14,35 @@ namespace VGManager.Library.Services;
 public class VariableGroupService : IVariableGroupService
 {
     private readonly IAdapterCommunicator _adapterCommunicator;
-    private readonly IVariableFilterService _variableFilterService;
     private readonly ILogger _logger;
 
     public VariableGroupService(
         IAdapterCommunicator adapterCommunicator,
-        IVariableFilterService variableFilterService,
         ILogger<VariableGroupService> logger
         )
     {
         _adapterCommunicator = adapterCommunicator;
-        _variableFilterService = variableFilterService;
         _logger = logger;
     }
 
     public async Task<AdapterResponseModel<IEnumerable<VariableGroup>>> GetVariableGroupsAsync(
         VariableGroupModel variableGroupModel,
+        IEnumerable<string>? potentialVariableGroups,
         bool containsKey,
         CancellationToken cancellationToken = default
         )
     {
         _logger.LogInformation("Get variable groups from {project} Azure project.", variableGroupModel.Project);
 
-        var request = new ExtendedBaseRequest()
+        var request = new GetVGRequest()
         {
             Organization = variableGroupModel.Organization,
             PAT = variableGroupModel.PAT,
-            Project = variableGroupModel.Project
+            Project = variableGroupModel.Project,
+            ContainsSecrets = variableGroupModel.ContainsSecrets,
+            VariableGroupFilter = variableGroupModel.VariableGroupFilter,
+            FilterAsRegex = true,
+            PotentialVariableGroups = potentialVariableGroups?.ToArray(),
         };
 
         (var isSuccess, var response) = await _adapterCommunicator.CommunicateWithAdapterAsync(
@@ -65,11 +67,7 @@ public class VariableGroupService : IVariableGroupService
 
         if (status == AdapterStatus.Success)
         {
-            var filteredVariableGroups = variableGroupModel.ContainsSecrets ?
-                        _variableFilterService.Filter(adapterResult.Data, variableGroupModel.VariableGroupFilter) :
-                        _variableFilterService.FilterWithoutSecrets(true, variableGroupModel.VariableGroupFilter, adapterResult.Data);
-
-            var result = GetVariableGroups(filteredVariableGroups, variableGroupModel.KeyFilter, containsKey);
+            var result = GetVariableGroups(adapterResult.Data, variableGroupModel.KeyFilter, containsKey);
             return GetResult(status, result);
         }
         else
