@@ -88,9 +88,9 @@ public partial class VariableGroupController
     {
         var vgServiceModel = _mapper.Map<VariableGroupModel>(request);
         var variableGroupResultsModel = await _vgService.GetVariableGroupsAsync(
-            vgServiceModel, 
+            vgServiceModel,
             request.PotentialVariableGroups?.Select(vgs => vgs.Name) ?? null!,
-            request.ContainsKey, 
+            request.ContainsKey,
             cancellationToken
             );
 
