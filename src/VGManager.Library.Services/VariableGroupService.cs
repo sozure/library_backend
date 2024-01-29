@@ -43,6 +43,8 @@ public class VariableGroupService : IVariableGroupService
             VariableGroupFilter = variableGroupModel.VariableGroupFilter,
             FilterAsRegex = true,
             PotentialVariableGroups = potentialVariableGroups?.ToArray(),
+            KeyIsRegex = variableGroupModel.KeyIsRegex,
+            KeyFilter = variableGroupModel.KeyFilter,
         };
 
         (var isSuccess, var response) = await _adapterCommunicator.CommunicateWithAdapterAsync(

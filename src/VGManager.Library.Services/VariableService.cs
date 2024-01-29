@@ -58,7 +58,9 @@ public partial class VariableService : IVariableService
             Project = variableGroupModel.Project,
             ContainsSecrets = variableGroupModel.ContainsSecrets,
             VariableGroupFilter = variableGroupModel.VariableGroupFilter,
-            FilterAsRegex = filterAsRegex
+            FilterAsRegex = filterAsRegex,
+            KeyIsRegex = variableGroupModel.KeyIsRegex,
+            KeyFilter = variableGroupModel.KeyFilter,
         };
 
         (var isSuccess, var response) = await _adapterCommunicator.CommunicateWithAdapterAsync(
