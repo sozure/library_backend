@@ -9,6 +9,7 @@ using VGManager.Adapter.Models.Response;
 using VGManager.Adapter.Models.StatusEnums;
 using VGManager.Library.Repositories.Interfaces.VGRepositories;
 using VGManager.Library.Services.Interfaces;
+using VGManager.Library.Services.Models;
 using VGManager.Library.Services.Models.VariableGroups.Requests;
 using VGManager.Library.Services.Settings;
 
@@ -45,7 +46,7 @@ public partial class VariableService : IVariableService
         _logger = logger;
     }
 
-    private async Task<AdapterResponseModel<IEnumerable<VariableGroup>>> GetAllAsync(
+    private async Task<AdapterResponseModel<IEnumerable<SimplifiedVGResponse>>> GetAllAsync(
         VariableGroupModel variableGroupModel,
         bool filterAsRegex,
         CancellationToken cancellationToken
@@ -71,14 +72,14 @@ public partial class VariableService : IVariableService
 
         if (!isSuccess)
         {
-            return new() { Data = Enumerable.Empty<VariableGroup>() };
+            return new() { Data = Enumerable.Empty<SimplifiedVGResponse>() };
         }
 
-        var adapterResult = JsonSerializer.Deserialize<BaseResponse<AdapterResponseModel<IEnumerable<VariableGroup>>>>(response)?.Data;
+        var adapterResult = JsonSerializer.Deserialize<BaseResponse<AdapterResponseModel<IEnumerable<SimplifiedVGResponse>>>>(response)?.Data;
 
         if (adapterResult is null)
         {
-            return new() { Data = Enumerable.Empty<VariableGroup>() };
+            return new() { Data = Enumerable.Empty<SimplifiedVGResponse>() };
         }
 
         return adapterResult;
@@ -115,7 +116,7 @@ public partial class VariableService : IVariableService
         return adapterResult ?? AdapterStatus.Unknown;
     }
 
-    private static VariableGroupParameters GetVariableGroupParameters(VariableGroup filteredVariableGroup, string variableGroupName)
+    private static VariableGroupParameters GetVariableGroupParameters(SimplifiedVGResponse filteredVariableGroup, string variableGroupName)
     {
         return new()
         {

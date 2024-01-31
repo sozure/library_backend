@@ -1,8 +1,10 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.TeamFoundation.DistributedTask.WebApi;
 using System.Text.RegularExpressions;
+using VGManager.Adapter.Models.Response;
 using VGManager.Adapter.Models.StatusEnums;
 using VGManager.Library.Entities.VGEntities;
+using VGManager.Library.Services.Models;
 using VGManager.Library.Services.Models.VariableGroups.Requests;
 
 namespace VGManager.Library.Services;
@@ -77,7 +79,7 @@ public partial class VariableService
     private async Task<AdapterStatus> UpdateVariableGroupsAsync(
         VariableGroupModel model,
         string newValue,
-        IEnumerable<VariableGroup> filteredVariableGroups,
+        IEnumerable<SimplifiedVGResponse> filteredVariableGroups,
         string keyFilter,
         Regex? valueRegex,
         CancellationToken cancellationToken
@@ -111,7 +113,7 @@ public partial class VariableService
         string newValue,
         string keyFilter,
         Regex? regex,
-        VariableGroup filteredVariableGroup
+        SimplifiedVGResponse filteredVariableGroup
         )
     {
         var filteredVariables = _variableFilterService.Filter(filteredVariableGroup.Variables, keyFilter);

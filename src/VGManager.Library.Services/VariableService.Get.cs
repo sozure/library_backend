@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.TeamFoundation.DistributedTask.WebApi;
 using System.Text.RegularExpressions;
 using VGManager.Adapter.Models.Models;
+using VGManager.Adapter.Models.Response;
 using VGManager.Adapter.Models.StatusEnums;
 using VGManager.Library.Services.Models.VariableGroups.Requests;
 using VGManager.Library.Services.Models.VariableGroups.Results;
@@ -34,7 +35,7 @@ public partial class VariableService
 
     private AdapterResponseModel<IEnumerable<VariableResult>> GetVariablesAsync(
         VariableGroupModel variableGroupModel,
-        AdapterResponseModel<IEnumerable<VariableGroup>> vgEntity,
+        AdapterResponseModel<IEnumerable<SimplifiedVGResponse>> vgEntity,
         AdapterStatus status
         )
     {
@@ -105,7 +106,7 @@ public partial class VariableService
         string keyFilter,
         Regex? valueRegex,
         string project,
-        VariableGroup filteredVariableGroup
+        SimplifiedVGResponse filteredVariableGroup
         )
     {
         var filteredVariables = _variableFilterService.Filter(filteredVariableGroup.Variables, keyFilter);
@@ -116,7 +117,7 @@ public partial class VariableService
         Regex keyRegex,
         Regex? valueRegex,
         string project,
-        VariableGroup filteredVariableGroup
+        SimplifiedVGResponse filteredVariableGroup
         )
     {
         var filteredVariables = _variableFilterService.Filter(filteredVariableGroup.Variables, keyRegex);
@@ -125,7 +126,7 @@ public partial class VariableService
 
     private IEnumerable<VariableResult> CollectVariables(
         Regex? valueRegex,
-        VariableGroup filteredVariableGroup,
+        SimplifiedVGResponse filteredVariableGroup,
         string project,
         IEnumerable<KeyValuePair<string, VariableValue>> filteredVariables
         )
@@ -154,7 +155,7 @@ public partial class VariableService
     }
 
     private IEnumerable<VariableResult> AddVariableResult(
-        VariableGroup filteredVariableGroup,
+        SimplifiedVGResponse filteredVariableGroup,
         KeyValuePair<string, VariableValue> filteredVariable,
         string variableValue,
         string project
@@ -163,14 +164,13 @@ public partial class VariableService
         var subResult = new List<VariableResult>();
         if (filteredVariableGroup.Type == SecretVGType)
         {
-            var azProviderData = filteredVariableGroup.ProviderData as AzureKeyVaultVariableGroupProviderData;
             subResult.Add(new VariableResult()
             {
                 Project = project,
                 SecretVariableGroup = true,
                 VariableGroupName = filteredVariableGroup.Name,
                 VariableGroupKey = filteredVariable.Key,
-                KeyVaultName = azProviderData?.Vault ?? string.Empty
+                KeyVaultName = filteredVariableGroup.KeyVaultName ?? string.Empty
             });
         }
         else
