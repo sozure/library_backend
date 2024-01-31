@@ -2,8 +2,10 @@ using Microsoft.Extensions.Logging;
 using Microsoft.TeamFoundation.DistributedTask.WebApi;
 using System.Text.RegularExpressions;
 using VGManager.Adapter.Models.Models;
+using VGManager.Adapter.Models.Response;
 using VGManager.Adapter.Models.StatusEnums;
 using VGManager.Library.Entities.VGEntities;
+using VGManager.Library.Services.Models;
 using VGManager.Library.Services.Models.VariableGroups.Requests;
 
 namespace VGManager.Library.Services;
@@ -55,12 +57,12 @@ public partial class VariableService
         return status;
     }
 
-    private IEnumerable<VariableGroup> CollectVariableGroups(
-        AdapterResponseModel<IEnumerable<VariableGroup>> vgEntity,
+    private IEnumerable<SimplifiedVGResponse> CollectVariableGroups(
+        AdapterResponseModel<IEnumerable<SimplifiedVGResponse>> vgEntity,
         string? keyFilter
         )
     {
-        IEnumerable<VariableGroup> filteredVariableGroups;
+        IEnumerable<SimplifiedVGResponse> filteredVariableGroups;
         if (keyFilter is not null)
         {
             try
@@ -87,7 +89,7 @@ public partial class VariableService
 
     private async Task<AdapterStatus> AddVariablesAsync(
         VariableGroupModel model,
-        IEnumerable<VariableGroup> filteredVariableGroups,
+        IEnumerable<SimplifiedVGResponse> filteredVariableGroups,
         string key,
         string value,
         CancellationToken cancellationToken
@@ -136,7 +138,7 @@ public partial class VariableService
         VariableGroupModel model,
         string key,
         string value,
-        VariableGroup filteredVariableGroup,
+        SimplifiedVGResponse filteredVariableGroup,
         CancellationToken cancellationToken
         )
     {
