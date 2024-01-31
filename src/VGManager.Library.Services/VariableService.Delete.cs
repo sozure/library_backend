@@ -1,7 +1,9 @@
 
 using Microsoft.TeamFoundation.DistributedTask.WebApi;
+using VGManager.Adapter.Models.Response;
 using VGManager.Adapter.Models.StatusEnums;
 using VGManager.Library.Entities.VGEntities;
+using VGManager.Library.Services.Models;
 using VGManager.Library.Services.Models.VariableGroups.Requests;
 
 namespace VGManager.Library.Services;
@@ -48,7 +50,7 @@ public partial class VariableService
 
     private async Task<AdapterStatus> DeleteVariablesAsync(
         VariableGroupModel variableGroupModel,
-        IEnumerable<VariableGroup> filteredVariableGroups,
+        IEnumerable<SimplifiedVGResponse> filteredVariableGroups,
         CancellationToken cancellationToken
         )
     {
@@ -87,7 +89,7 @@ public partial class VariableService
         return deletionCounter1 == deletionCounter2 ? AdapterStatus.Success : AdapterStatus.Unknown;
     }
 
-    private bool DeleteVariables(VariableGroup filteredVariableGroup, string keyFilter, string? valueCondition)
+    private bool DeleteVariables(SimplifiedVGResponse filteredVariableGroup, string keyFilter, string? valueCondition)
     {
         var deleteIsNeeded = false;
         var filteredVariables = _variableFilterService.Filter(filteredVariableGroup.Variables, keyFilter);

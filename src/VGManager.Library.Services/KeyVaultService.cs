@@ -10,6 +10,7 @@ using VGManager.Adapter.Models.StatusEnums;
 using VGManager.Library.Entities.SecretEntities;
 using VGManager.Library.Repositories.Interfaces.SecretRepositories;
 using VGManager.Library.Services.Interfaces;
+using VGManager.Library.Services.Models;
 using VGManager.Library.Services.Models.Secrets.Requests;
 using VGManager.Library.Services.Models.Secrets.Results;
 
@@ -97,7 +98,7 @@ public class KeyVaultService : IKeyVaultService
         }
 
         var result = JsonSerializer
-            .Deserialize<BaseResponse<AdapterResponseModel<IEnumerable<AdapterResponseModel<KeyVaultSecret?>>>>>(response)?.Data;
+            .Deserialize<BaseResponse<AdapterResponseModel<IEnumerable<AdapterResponseModel<SimplifiedSecretResponse?>>>>>(response)?.Data;
 
         if (result is null)
         {
@@ -247,7 +248,7 @@ public class KeyVaultService : IKeyVaultService
         }
 
         var result = JsonSerializer
-            .Deserialize<BaseResponse<AdapterResponseModel<IEnumerable<AdapterResponseModel<KeyVaultSecret?>>>>>(response)?.Data;
+            .Deserialize<BaseResponse<AdapterResponseModel<IEnumerable<AdapterResponseModel<SimplifiedSecretResponse?>>>>>(response)?.Data;
 
         if (result is null)
         {
@@ -397,8 +398,8 @@ public class KeyVaultService : IKeyVaultService
         return (filteredSecrets.Count(), recoverCounter);
     }
 
-    private IEnumerable<AdapterResponseModel<KeyVaultSecret?>> Filter(
-        IEnumerable<AdapterResponseModel<KeyVaultSecret?>> keyVaultSecrets,
+    private IEnumerable<AdapterResponseModel<SimplifiedSecretResponse?>> Filter(
+        IEnumerable<AdapterResponseModel<SimplifiedSecretResponse?>> keyVaultSecrets,
         string filter
         )
     {
@@ -410,10 +411,10 @@ public class KeyVaultService : IKeyVaultService
         catch (RegexParseException ex)
         {
             _logger.LogError(ex, "Couldn't parse and create regex. Value: {value}.", filter);
-            return Enumerable.Empty<AdapterResponseModel<KeyVaultSecret?>>();
+            return Enumerable.Empty<AdapterResponseModel<SimplifiedSecretResponse?>>();
         }
-        var relevantSecrets = keyVaultSecrets.Where(secret => regex.IsMatch(secret?.Data?.Name.ToLower() ?? string.Empty)).ToList();
-        var result = relevantSecrets.Select(secret => new AdapterResponseModel<KeyVaultSecret?>
+        var relevantSecrets = keyVaultSecrets.Where(secret => regex.IsMatch(secret?.Data?.SecretName.ToLower() ?? string.Empty)).ToList();
+        var result = relevantSecrets.Select(secret => new AdapterResponseModel<SimplifiedSecretResponse?>
         {
             Status = secret.Status,
             Data = secret.Data
@@ -476,7 +477,7 @@ public class KeyVaultService : IKeyVaultService
 
     private async Task<AdapterStatus> DeleteAsync(
         SecretModel secretModel,
-        AdapterResponseModel<IEnumerable<AdapterResponseModel<KeyVaultSecret?>>> secretsResultModel,
+        AdapterResponseModel<IEnumerable<AdapterResponseModel<SimplifiedSecretResponse?>>> secretsResultModel,
         CancellationToken cancellationToken
         )
     {
@@ -487,8 +488,8 @@ public class KeyVaultService : IKeyVaultService
 
         foreach (var secret in filteredSecrets)
         {
-            var secretName = secret?.Data?.Name;
-            var secretValue = secret?.Data?.Value;
+            var secretName = secret?.Data?.SecretName;
+            var secretValue = secret?.Data?.SecretValue;
             if (secretName is not null && secretValue is not null)
             {
                 deletionCounter1++;
@@ -535,17 +536,17 @@ public class KeyVaultService : IKeyVaultService
         return AdapterStatus.Unknown;
     }
 
-    private static IEnumerable<AdapterResponseModel<KeyVaultSecret?>> CollectSecrets(
-        AdapterResponseModel<IEnumerable<AdapterResponseModel<KeyVaultSecret?>>>? secretsResultModel
+    private static IEnumerable<AdapterResponseModel<SimplifiedSecretResponse?>> CollectSecrets(
+        AdapterResponseModel<IEnumerable<AdapterResponseModel<SimplifiedSecretResponse?>>>? secretsResultModel
         )
     {
         if (secretsResultModel is null)
         {
-            return Enumerable.Empty<AdapterResponseModel<KeyVaultSecret?>>();
+            return Enumerable.Empty<AdapterResponseModel<SimplifiedSecretResponse?>>();
         }
 
         var relevantSecrets = secretsResultModel.Data.Where(secret => secret != null);
-        var result = relevantSecrets.Select(secret => new AdapterResponseModel<KeyVaultSecret?>
+        var result = relevantSecrets.Select(secret => new AdapterResponseModel<SimplifiedSecretResponse?>
         {
             Status = secret!.Status,
             Data = secret!.Data
@@ -553,12 +554,16 @@ public class KeyVaultService : IKeyVaultService
         return result;
     }
 
-    private static void CollectSecrets(string keyVault, List<SecretResult> secretList, AdapterResponseModel<KeyVaultSecret?>? filteredSecret)
+    private static void CollectSecrets(
+        string keyVault, 
+        List<SecretResult> secretList, 
+        AdapterResponseModel<SimplifiedSecretResponse?>? filteredSecret
+        )
     {
         if (filteredSecret is not null)
         {
-            var secretName = filteredSecret.Data?.Name ?? string.Empty;
-            var secretValue = filteredSecret.Data?.Value ?? string.Empty;
+            var secretName = filteredSecret.Data?.SecretName ?? string.Empty;
+            var secretValue = filteredSecret.Data?.SecretValue ?? string.Empty;
 
             if (!string.IsNullOrEmpty(secretName) && !string.IsNullOrEmpty(secretValue))
             {
