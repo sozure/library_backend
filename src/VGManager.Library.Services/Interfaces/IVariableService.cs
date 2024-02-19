@@ -1,13 +1,13 @@
 using VGManager.Adapter.Models.Models;
+using VGManager.Adapter.Models.Requests.VG;
 using VGManager.Adapter.Models.StatusEnums;
-using VGManager.Library.Services.Models.VariableGroups.Requests;
 using VGManager.Library.Services.Models.VariableGroups.Results;
 
 namespace VGManager.Library.Services.Interfaces;
 
 public interface IVariableService
 {
-    Task<AdapterStatus> UpdateVariableGroupsAsync(
+    Task<AdapterStatus?> UpdateVariableGroupsAsync(
         VariableGroupUpdateModel variableGroupUpdateModel,
         bool filterAsRegex,
         CancellationToken cancellationToken = default
@@ -18,12 +18,12 @@ public interface IVariableService
         CancellationToken cancellationToken = default
         );
 
-    Task<AdapterStatus> AddVariablesAsync(
+    Task<AdapterStatus?> AddVariablesAsync(
         VariableGroupAddModel variableGroupAddModel,
         CancellationToken cancellationToken = default
         );
 
-    Task<AdapterStatus> DeleteVariablesAsync(
+    Task<AdapterStatus?> DeleteVariablesAsync(
         VariableGroupModel variableGroupModel,
         bool filterAsRegex,
         CancellationToken cancellationToken = default
