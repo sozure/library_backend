@@ -2,9 +2,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.TeamFoundation.DistributedTask.WebApi;
 using System.Text.RegularExpressions;
 using VGManager.Adapter.Models.Models;
+using VGManager.Adapter.Models.Requests.VG;
 using VGManager.Adapter.Models.Response;
 using VGManager.Adapter.Models.StatusEnums;
-using VGManager.Library.Services.Models.VariableGroups.Requests;
 using VGManager.Library.Services.Models.VariableGroups.Results;
 
 namespace VGManager.Library.Services;

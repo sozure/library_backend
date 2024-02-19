@@ -2,11 +2,11 @@ using AutoMapper;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using VGManager.Adapter.Models.Models;
+using VGManager.Adapter.Models.Requests.VG;
 using VGManager.Adapter.Models.StatusEnums;
 using VGManager.Library.Api.Endpoints.VariableGroup.Request;
 using VGManager.Library.Api.Endpoints.VariableGroup.Response;
 using VGManager.Library.Services.Interfaces;
-using VGManager.Library.Services.Models.VariableGroups.Requests;
 
 namespace VGManager.Library.Api.Endpoints.VariableGroup;
 
