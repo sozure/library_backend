@@ -10,7 +10,6 @@ using VGManager.Adapter.Models.StatusEnums;
 using VGManager.Library.Entities.SecretEntities;
 using VGManager.Library.Repositories.Interfaces.SecretRepositories;
 using VGManager.Library.Services.Interfaces;
-using VGManager.Library.Services.Models;
 using VGManager.Library.Services.Models.Secrets.Requests;
 using VGManager.Library.Services.Models.Secrets.Results;
 
@@ -555,8 +554,8 @@ public class KeyVaultService : IKeyVaultService
     }
 
     private static void CollectSecrets(
-        string keyVault, 
-        List<SecretResult> secretList, 
+        string keyVault,
+        List<SecretResult> secretList,
         AdapterResponseModel<SimplifiedSecretResponse?>? filteredSecret
         )
     {

@@ -2,10 +2,10 @@ using System.Text.Json;
 using VGManager.Adapter.Models.Kafka;
 using VGManager.Adapter.Models.Models;
 using VGManager.Adapter.Models.Requests;
+using VGManager.Adapter.Models.Requests.VG;
 using VGManager.Adapter.Models.Response;
 using VGManager.Adapter.Models.StatusEnums;
 using VGManager.Library.Services.Interfaces;
-using VGManager.Library.Services.Models.Common;
 
 namespace VGManager.Library.Services;
 

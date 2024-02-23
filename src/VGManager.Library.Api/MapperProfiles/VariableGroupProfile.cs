@@ -1,7 +1,7 @@
 using AutoMapper;
+using VGManager.Adapter.Models.Requests.VG;
 using VGManager.Library.Api.Endpoints.VariableGroup.Request;
 using VGManager.Library.Api.Endpoints.VariableGroup.Response;
-using VGManager.Library.Services.Models.VariableGroups.Requests;
 using VGManager.Library.Services.Models.VariableGroups.Results;
 
 namespace VGManager.Library.Api.MapperProfiles;
