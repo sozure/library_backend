@@ -5,7 +5,7 @@ namespace VGManager.Library.Services.Interfaces;
 
 public interface IVariableFilterService
 {
-    IEnumerable<KeyValuePair<string, VariableValue>> Filter(IDictionary<string, VariableValue> variables, Regex regex);
+    IEnumerable<KeyValuePair<string, string>> Filter(IDictionary<string, string> variables, Regex regex);
 
-    IEnumerable<KeyValuePair<string, VariableValue>> Filter(IDictionary<string, VariableValue> variables, string filter);
+    IEnumerable<KeyValuePair<string, string>> Filter(IDictionary<string, string> variables, string filter);
 }

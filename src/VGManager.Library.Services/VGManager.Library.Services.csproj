@@ -10,7 +10,7 @@
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="12.0.1" />
       <PackageReference Include="VGManager.Adapter.Client" Version="1.2.0" />
-      <PackageReference Include="VGManager.Adapter.Models" Version="1.9.3" />
+      <PackageReference Include="VGManager.Adapter.Models" Version="1.9.4" />
   </ItemGroup>
 
     <ItemGroup>

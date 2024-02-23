@@ -9,6 +9,7 @@ using VGManager.Adapter.Models.StatusEnums;
 using VGManager.Library.Entities.VGEntities;
 using VGManager.Library.Repositories.Interfaces.VGRepositories;
 using VGManager.Library.Services.Interfaces;
+using VGManager.Library.Services.Models.VariableGroups.Results;
 using VGManager.Library.Services.Settings;
 
 namespace VGManager.Library.Services;
@@ -194,7 +195,29 @@ public partial class VariableService : IVariableService
         return adapterResult;
     }
 
-    private async Task<AdapterResponseModel<IEnumerable<SimplifiedVGResponse>>> GetAllAsync(
+    public async Task<AdapterResponseModel<IEnumerable<VariableResult>>> GetVariablesAsync(
+        VariableGroupModel variableGroupModel,
+        CancellationToken cancellationToken = default
+        )
+    {
+        var vgEntity = await GetAllAsync(variableGroupModel, true, cancellationToken);
+        var status = vgEntity.Status;
+
+        if (status == AdapterStatus.Success)
+        {
+            return GetVariablesAsync(variableGroupModel, vgEntity, status);
+        }
+        else
+        {
+            return new()
+            {
+                Status = status,
+                Data = new List<VariableResult>(),
+            };
+        }
+    }
+
+    private async Task<AdapterResponseModel<IEnumerable<SimplifiedVGResponse<string>>>> GetAllAsync(
         VariableGroupModel variableGroupModel,
         bool filterAsRegex,
         CancellationToken cancellationToken
@@ -220,14 +243,15 @@ public partial class VariableService : IVariableService
 
         if (!isSuccess)
         {
-            return new() { Data = Enumerable.Empty<SimplifiedVGResponse>() };
+            return new() { Data = Enumerable.Empty<SimplifiedVGResponse<string>>() };
         }
 
-        var adapterResult = JsonSerializer.Deserialize<BaseResponse<AdapterResponseModel<IEnumerable<SimplifiedVGResponse>>>>(response)?.Data;
+        var adapterResult = JsonSerializer
+            .Deserialize<BaseResponse<AdapterResponseModel<IEnumerable<SimplifiedVGResponse<string>>>>>(response)?.Data;
 
         if (adapterResult is null)
         {
-            return new() { Data = Enumerable.Empty<SimplifiedVGResponse>() };
+            return new() { Data = Enumerable.Empty<SimplifiedVGResponse<string>>() };
         }
 
         return adapterResult;

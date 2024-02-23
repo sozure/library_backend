@@ -11,31 +11,9 @@ namespace VGManager.Library.Services;
 
 public partial class VariableService
 {
-    public async Task<AdapterResponseModel<IEnumerable<VariableResult>>> GetVariablesAsync(
-        VariableGroupModel variableGroupModel,
-        CancellationToken cancellationToken = default
-        )
-    {
-        var vgEntity = await GetAllAsync(variableGroupModel, true, cancellationToken);
-        var status = vgEntity.Status;
-
-        if (status == AdapterStatus.Success)
-        {
-            return GetVariablesAsync(variableGroupModel, vgEntity, status);
-        }
-        else
-        {
-            return new()
-            {
-                Status = status,
-                Data = new List<VariableResult>(),
-            };
-        }
-    }
-
     private AdapterResponseModel<IEnumerable<VariableResult>> GetVariablesAsync(
         VariableGroupModel variableGroupModel,
-        AdapterResponseModel<IEnumerable<SimplifiedVGResponse>> vgEntity,
+        AdapterResponseModel<IEnumerable<SimplifiedVGResponse<string>>> vgEntity,
         AdapterStatus status
         )
     {
@@ -106,7 +84,7 @@ public partial class VariableService
         string keyFilter,
         Regex? valueRegex,
         string project,
-        SimplifiedVGResponse filteredVariableGroup
+        SimplifiedVGResponse<string> filteredVariableGroup
         )
     {
         var filteredVariables = _variableFilterService.Filter(filteredVariableGroup.Variables, keyFilter);
@@ -117,7 +95,7 @@ public partial class VariableService
         Regex keyRegex,
         Regex? valueRegex,
         string project,
-        SimplifiedVGResponse filteredVariableGroup
+        SimplifiedVGResponse<string> filteredVariableGroup
         )
     {
         var filteredVariables = _variableFilterService.Filter(filteredVariableGroup.Variables, keyRegex);
@@ -126,15 +104,15 @@ public partial class VariableService
 
     private IEnumerable<VariableResult> CollectVariables(
         Regex? valueRegex,
-        SimplifiedVGResponse filteredVariableGroup,
+        SimplifiedVGResponse<string> filteredVariableGroup,
         string project,
-        IEnumerable<KeyValuePair<string, VariableValue>> filteredVariables
+        IEnumerable<KeyValuePair<string, string>> filteredVariables
         )
     {
         var result = new List<VariableResult>();
         foreach (var filteredVariable in filteredVariables)
         {
-            var variableValue = filteredVariable.Value.Value ?? string.Empty;
+            var variableValue = filteredVariable.Value ?? string.Empty;
             if (valueRegex is not null)
             {
                 if (valueRegex.IsMatch(variableValue.ToLower()))
@@ -155,8 +133,8 @@ public partial class VariableService
     }
 
     private IEnumerable<VariableResult> AddVariableResult(
-        SimplifiedVGResponse filteredVariableGroup,
-        KeyValuePair<string, VariableValue> filteredVariable,
+        SimplifiedVGResponse<string> filteredVariableGroup,
+        KeyValuePair<string, string> filteredVariable,
         string variableValue,
         string project
         )
