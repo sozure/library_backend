@@ -1,4 +1,4 @@
-# VGManager Backend: A Backend API for Library and KeyVault Interaction
+# VGManager Library Backend: A Backend API for Library and KeyVault Interaction
 
 This .NET API project is designed to provide a seamless interface for interacting with Azure DevOps and Azure KeyVault. It is stateless and allows users to perform various operations related to these services through a set of well-defined endpoints. This README will guide you through the setup, endpoints, and usage of this API.
 
@@ -26,7 +26,7 @@ This .NET API project is designed to provide a seamless interface for interactin
 ## Prerequisites
 Before you can use this API, make sure you have the following prerequisites installed and configured:
 
-- .NET SDK (version 6.0 or higher)
+- .NET SDK (version 8.0)
 - Azure DevOps SDK NuGet packages
 - Azure KeyVault access and authentication credentials
 - Visual Studio or a compatible IDE for development
@@ -40,72 +40,91 @@ Before you can use this API, make sure you have the following prerequisites inst
 
 ## Endpoints
 
-### GET Projects
+### Projects
+#### - GET Projects
 
 **Endpoint:** `/api/Project/Get`
 **Description:** Retrieve a list of projects from your Azure DevOps organization.
 
-### GET Secrets
+### Secrets from Azure Portal
+#### - GET Secrets
 
 **Endpoint:** `/api/Secret/Get`
 **Description:** Retrieve secrets from Azure KeyVault.
 
-### GET Deleted Secrets from KeyVault
+#### - GET Key vaults
+
+**Endpoint:** `/api/Secret/GetKeyVaults`
+**Description:** Retrieve key vaults from Azure Subscription.
+
+#### - GET Deleted Secrets from KeyVault
 
 **Endpoint:** `/api/Secret/GetDeleted`
 **Description:** Retrieve deleted secrets from Azure KeyVault.
 
-### Delete Secrets
+#### - Delete Secrets
 
 **Endpoint:** `/api/Secret/Delete`
 **Description:** Delete secrets from Azure KeyVault.
 
-### Delete Secret Inline
+#### - Delete Secret Inline
 
 **Endpoint:** `/api/Secret/DeleteInline`
 **Description:** Delete secret from Azure KeyVault.
 
-### Recover Secrets
+#### - Recover Secrets
 
 **Endpoint:** `/api/Secret/Recover`
 **Description:** Recover deleted secrets in Azure KeyVault.
 
-### Recover Secret Inline
+#### - Recover Secret Inline
 
 **Endpoint:** `/api/Secret/RecoverInline`
 **Description:** Recover deleted secret in Azure KeyVault.
 
-### Copy-Paste Entire KeyVaults
+#### - Copy-Paste Entire KeyVaults
 
 **Endpoint:** `/api/Secret/Copy`
 **Description:** Copy and paste entire KeyVaults, including secrets, from one location to another.
 
-### Get variables from Variable Groups
+### Environment variables from Azure DevOps Library
+
+#### - Get variables from Variable Groups
 
 **Endpoint:** `/api/VariableGroup/Get`
 **Description:** Retrieve variables from variable groups inside Azure DevOps Libraries.
 
-### Update variables of Variable Groups
+#### - Get variable groups from Variable Groups
+
+**Endpoint:** `/api/VariableGroup/GetVariableGroups`
+**Description:** Retrieve variables groups from Azure DevOps Library.
+
+#### - Update variables of Variable Groups
 
 **Endpoint:** `/api/VariableGroup/Update`
 **Description:** Perform update operation on variables within variable groups inside Azure DevOps Libraries.
 
-### Update variable of Variable Group Inline
+#### - Update variable of Variable Group Inline
 
 **Endpoint:** `/api/VariableGroup/UpdateInline`
 **Description:** Perform update operation on variable within variable group inside Azure DevOps Libraries.
 
-### Add variables of Variable Groups
+#### - Add variables of Variable Groups
 
 **Endpoint:** `/api/VariableGroup/Add`
 **Description:** Perform add operation on variables within variable groups inside Azure DevOps Libraries.
 
-### Delete variables of Variable Groups
+#### - Add variables of Variable Group Inline
+
+**Endpoint:** `/api/VariableGroup/AddInline`
+**Description:** Perform add operation on variables within variable groups inside Azure DevOps Libraries.
+
+#### - Delete variables of Variable Groups
 
 **Endpoint:** `/api/VariableGroup/Delete`
 **Description:** Perform delete operation on variables within variable groups inside Azure DevOps Libraries.
 
-### Delete variable of Variable Group Inline
+#### - Delete variable of Variable Group Inline
 
 **Endpoint:** `/api/VariableGroup/DeleteInline`
 **Description:** Perform delete operation on variable within variable group inside Azure DevOps Libraries.
