@@ -243,7 +243,7 @@ public partial class VariableService : IVariableService
 
         if (!isSuccess)
         {
-            return new() { Data = Enumerable.Empty<SimplifiedVGResponse<string>>() };
+            return new() { Data = Enumerable.Empty<SimplifiedVGResponse<string>>(), Status = AdapterStatus.MessageSizeTooLarge };
         }
 
         var adapterResult = JsonSerializer
