@@ -5,12 +5,8 @@ using VGManager.Library.Repositories.Interfaces.VGRepositories;
 
 namespace VGManager.Library.Repositories.VGRepositories;
 
-public class VGAddColdRepository : SqlRepository<VGAddEntity>, IVGAddColdRepository
+public class VGAddColdRepository(OperationsDbContext dbContext) : SqlRepository<VGAddEntity>(dbContext), IVGAddColdRepository
 {
-    public VGAddColdRepository(OperationsDbContext dbContext) : base(dbContext)
-    {
-    }
-
     public async Task AddEntityAsync(VGAddEntity entity, CancellationToken cancellationToken = default)
     {
         await AddAsync(entity, cancellationToken);

@@ -13,17 +13,8 @@ namespace VGManager.Library.Api.Endpoints.Changes;
 [Route("api/[controller]")]
 [ApiController]
 [EnableCors("_allowSpecificOrigins")]
-public class ChangesController : ControllerBase
+public class ChangesController(IChangeService changesService, IMapper mapper) : ControllerBase
 {
-    private readonly IChangeService _changesService;
-    private readonly IMapper _mapper;
-
-    public ChangesController(IChangeService changesService, IMapper mapper)
-    {
-        _changesService = changesService;
-        _mapper = mapper;
-    }
-
     [HttpPost("Variables", Name = "getvariablechanges")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -35,7 +26,7 @@ public class ChangesController : ControllerBase
     {
         try
         {
-            var result = await _changesService.GetAsync(_mapper.Map<VGRequestModel>(request), cancellationToken);
+            var result = await changesService.GetAsync(mapper.Map<VGRequestModel>(request), cancellationToken);
             return Ok(new RepositoryResponseModel<VGOperationModel>
             {
                 Status = RepositoryStatus.Success,
@@ -63,7 +54,7 @@ public class ChangesController : ControllerBase
     {
         try
         {
-            var result = await _changesService.GetAsync(_mapper.Map<SecretRequestModel>(request), cancellationToken);
+            var result = await changesService.GetAsync(mapper.Map<SecretRequestModel>(request), cancellationToken);
             return Ok(new RepositoryResponseModel<SecretOperationModel>
             {
                 Status = RepositoryStatus.Success,
@@ -91,7 +82,7 @@ public class ChangesController : ControllerBase
     {
         try
         {
-            var result = await _changesService.GetAsync(_mapper.Map<KVRequestModel>(request), cancellationToken);
+            var result = await changesService.GetAsync(mapper.Map<KVRequestModel>(request), cancellationToken);
             return Ok(new RepositoryResponseModel<KVOperationModel>
             {
                 Status = RepositoryStatus.Success,

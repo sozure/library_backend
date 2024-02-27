@@ -13,17 +13,8 @@ namespace VGManager.Library.Api.Endpoints.Secret;
 [Route("api/[controller]")]
 [ApiController]
 [EnableCors("_allowSpecificOrigins")]
-public class SecretController : ControllerBase
+public class SecretController(IKeyVaultService keyVaultService, IMapper mapper) : ControllerBase
 {
-    private readonly IKeyVaultService _keyVaultService;
-    private readonly IMapper _mapper;
-
-    public SecretController(IKeyVaultService keyVaultService, IMapper mapper)
-    {
-        _keyVaultService = keyVaultService;
-        _mapper = mapper;
-    }
-
     [HttpPost("GetKeyVaults", Name = "GetKeyVaults")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -35,8 +26,8 @@ public class SecretController : ControllerBase
     {
         try
         {
-            var model = _mapper.Map<SecretBaseModel>(request);
-            (var subscriptionId, var keyVaults) = await _keyVaultService.GetKeyVaultsAsync(model, cancellationToken);
+            var model = mapper.Map<SecretBaseModel>(request);
+            (var subscriptionId, var keyVaults) = await keyVaultService.GetKeyVaultsAsync(model, cancellationToken);
             var result = new AdapterResponseModel<IEnumerable<string>, string>
             {
                 Status = AdapterStatus.Success,
@@ -81,13 +72,13 @@ public class SecretController : ControllerBase
         CancellationToken cancellationToken
         )
     {
-        var secretModel = _mapper.Map<SecretModel>(request);
-        var matchedSecrets = await _keyVaultService.GetSecretsAsync(secretModel, cancellationToken);
+        var secretModel = mapper.Map<SecretModel>(request);
+        var matchedSecrets = await keyVaultService.GetSecretsAsync(secretModel, cancellationToken);
 
         var result = new AdapterResponseModel<IEnumerable<SecretResponse>>()
         {
             Status = matchedSecrets.Status,
-            Data = _mapper.Map<IEnumerable<SecretResponse>>(matchedSecrets.Data)
+            Data = mapper.Map<IEnumerable<SecretResponse>>(matchedSecrets.Data)
         };
 
         return Ok(result);
@@ -102,13 +93,13 @@ public class SecretController : ControllerBase
         CancellationToken cancellationToken
         )
     {
-        var secretModel = _mapper.Map<SecretModel>(request);
-        var matchedDeletedSecrets = await _keyVaultService.GetDeletedSecretsAsync(secretModel, cancellationToken);
+        var secretModel = mapper.Map<SecretModel>(request);
+        var matchedDeletedSecrets = await keyVaultService.GetDeletedSecretsAsync(secretModel, cancellationToken);
 
         var result = new AdapterResponseModel<IEnumerable<DeletedSecretResponse>>()
         {
             Status = matchedDeletedSecrets.Status,
-            Data = _mapper.Map<IEnumerable<DeletedSecretResponse>>(matchedDeletedSecrets.Data)
+            Data = mapper.Map<IEnumerable<DeletedSecretResponse>>(matchedDeletedSecrets.Data)
         };
 
         return Ok(result);
@@ -123,14 +114,14 @@ public class SecretController : ControllerBase
         CancellationToken cancellationToken
         )
     {
-        var secretModel = _mapper.Map<SecretModel>(request);
-        await _keyVaultService.DeleteAsync(secretModel, cancellationToken);
-        var matchedSecrets = await _keyVaultService.GetSecretsAsync(secretModel, cancellationToken);
+        var secretModel = mapper.Map<SecretModel>(request);
+        await keyVaultService.DeleteAsync(secretModel, cancellationToken);
+        var matchedSecrets = await keyVaultService.GetSecretsAsync(secretModel, cancellationToken);
 
         var result = new AdapterResponseModel<IEnumerable<SecretResponse>>()
         {
             Status = matchedSecrets.Status,
-            Data = _mapper.Map<IEnumerable<SecretResponse>>(matchedSecrets.Data)
+            Data = mapper.Map<IEnumerable<SecretResponse>>(matchedSecrets.Data)
         };
 
         return Ok(result);
@@ -145,8 +136,8 @@ public class SecretController : ControllerBase
         CancellationToken cancellationToken
         )
     {
-        var secretModel = _mapper.Map<SecretModel>(request);
-        var status = await _keyVaultService.DeleteAsync(secretModel, cancellationToken);
+        var secretModel = mapper.Map<SecretModel>(request);
+        var status = await keyVaultService.DeleteAsync(secretModel, cancellationToken);
         return Ok(status);
     }
 
@@ -159,14 +150,14 @@ public class SecretController : ControllerBase
         CancellationToken cancellationToken
         )
     {
-        var secretModel = _mapper.Map<SecretModel>(request);
-        await _keyVaultService.RecoverSecretAsync(secretModel, cancellationToken);
-        var matchedSecrets = await _keyVaultService.GetDeletedSecretsAsync(secretModel, cancellationToken);
+        var secretModel = mapper.Map<SecretModel>(request);
+        await keyVaultService.RecoverSecretAsync(secretModel, cancellationToken);
+        var matchedSecrets = await keyVaultService.GetDeletedSecretsAsync(secretModel, cancellationToken);
 
         var result = new AdapterResponseModel<IEnumerable<DeletedSecretResponse>>()
         {
             Status = matchedSecrets.Status,
-            Data = _mapper.Map<IEnumerable<DeletedSecretResponse>>(matchedSecrets.Data)
+            Data = mapper.Map<IEnumerable<DeletedSecretResponse>>(matchedSecrets.Data)
         };
 
         return Ok(result);
@@ -181,8 +172,8 @@ public class SecretController : ControllerBase
         CancellationToken cancellationToken
         )
     {
-        var secretModel = _mapper.Map<SecretModel>(request);
-        var status = await _keyVaultService.RecoverSecretAsync(secretModel, cancellationToken);
+        var secretModel = mapper.Map<SecretModel>(request);
+        var status = await keyVaultService.RecoverSecretAsync(secretModel, cancellationToken);
         return Ok(status);
     }
 
@@ -195,8 +186,8 @@ public class SecretController : ControllerBase
         CancellationToken cancellationToken
         )
     {
-        var secretModel = _mapper.Map<SecretCopyModel>(request);
-        var status = await _keyVaultService.CopySecretsAsync(secretModel, cancellationToken);
+        var secretModel = mapper.Map<SecretCopyModel>(request);
+        var status = await keyVaultService.CopySecretsAsync(secretModel, cancellationToken);
         return Ok(status);
     }
 }

@@ -13,26 +13,13 @@ namespace VGManager.Library.Api.Endpoints.VariableGroup;
 [Route("api/[controller]")]
 [ApiController]
 [EnableCors("_allowSpecificOrigins")]
-public partial class VariableGroupController : ControllerBase
+public partial class VariableGroupController(
+    IVariableService variableService,
+    IVariableGroupService vgService,
+    IProjectService projectService,
+    IMapper mapper
+        ) : ControllerBase
 {
-    private readonly IVariableService _variableService;
-    private readonly IVariableGroupService _vgService;
-    private readonly IProjectService _projectService;
-    private readonly IMapper _mapper;
-
-    public VariableGroupController(
-        IVariableService variableService,
-        IVariableGroupService vgService,
-        IProjectService projectService,
-        IMapper mapper
-        )
-    {
-        _variableService = variableService;
-        _vgService = vgService;
-        _projectService = projectService;
-        _mapper = mapper;
-    }
-
     [HttpPost("Get", Name = "GetVariables")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -102,8 +89,8 @@ public partial class VariableGroupController : ControllerBase
         CancellationToken cancellationToken
     )
     {
-        var vgServiceModel = _mapper.Map<VariableGroupUpdateModel>(request);
-        var status = await _variableService.UpdateVariableGroupsAsync(vgServiceModel, false, cancellationToken);
+        var vgServiceModel = mapper.Map<VariableGroupUpdateModel>(request);
+        var status = await variableService.UpdateVariableGroupsAsync(vgServiceModel, false, cancellationToken);
 
         return Ok(status);
     }
@@ -130,8 +117,8 @@ public partial class VariableGroupController : ControllerBase
         CancellationToken cancellationToken
     )
     {
-        var vgServiceModel = _mapper.Map<VariableGroupAddModel>(request);
-        var status = await _variableService.AddVariablesAsync(vgServiceModel, cancellationToken);
+        var vgServiceModel = mapper.Map<VariableGroupAddModel>(request);
+        var status = await variableService.AddVariablesAsync(vgServiceModel, cancellationToken);
         return Ok(status);
     }
 
@@ -178,8 +165,8 @@ public partial class VariableGroupController : ControllerBase
         CancellationToken cancellationToken
     )
     {
-        var vgServiceModel = _mapper.Map<VariableGroupModel>(request);
-        var status = await _variableService.DeleteVariablesAsync(vgServiceModel, false, cancellationToken);
+        var vgServiceModel = mapper.Map<VariableGroupModel>(request);
+        var status = await variableService.DeleteVariablesAsync(vgServiceModel, false, cancellationToken);
         return Ok(status);
     }
 }

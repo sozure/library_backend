@@ -6,15 +6,13 @@ namespace VGManager.Library.Services;
 
 public class AdapterCommunicator(IVGManagerAdapterClientService clientService) : IAdapterCommunicator
 {
-    private readonly IVGManagerAdapterClientService _clientService = clientService;
-
     public async Task<(bool, string)> CommunicateWithAdapterAsync<T>(
         T request,
         string commandTypes,
         CancellationToken cancellationToken = default
         )
     {
-        (bool isSuccess, string response) = await _clientService.SendAndReceiveMessageAsync(
+        (bool isSuccess, string response) = await clientService.SendAndReceiveMessageAsync(
             commandTypes,
             JsonSerializer.Serialize(request),
             cancellationToken);

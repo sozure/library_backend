@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Logging;
-using Microsoft.TeamFoundation.DistributedTask.WebApi;
 using System.Text.RegularExpressions;
 using VGManager.Adapter.Models.Models;
 using VGManager.Adapter.Models.Requests.VG;
@@ -30,7 +29,7 @@ public partial class VariableService
             }
             catch (RegexParseException ex)
             {
-                _logger.LogError(ex, "Couldn't parse and create regex. Value: {value}.", valueFilter);
+                logger.LogError(ex, "Couldn't parse and create regex. Value: {value}.", valueFilter);
                 return new()
                 {
                     Status = status,
@@ -48,7 +47,7 @@ public partial class VariableService
             }
             catch (RegexParseException ex)
             {
-                _logger.LogError(ex, "Couldn't parse and create regex. Value: {value}.", keyFilter);
+                logger.LogError(ex, "Couldn't parse and create regex. Value: {value}.", keyFilter);
                 return new()
                 {
                     Status = status,
@@ -87,7 +86,7 @@ public partial class VariableService
         SimplifiedVGResponse<string> filteredVariableGroup
         )
     {
-        var filteredVariables = _variableFilterService.Filter(filteredVariableGroup.Variables, keyFilter);
+        var filteredVariables = variableFilterService.Filter(filteredVariableGroup.Variables, keyFilter);
         return CollectVariables(valueRegex, filteredVariableGroup, project, filteredVariables);
     }
 
@@ -98,7 +97,7 @@ public partial class VariableService
         SimplifiedVGResponse<string> filteredVariableGroup
         )
     {
-        var filteredVariables = _variableFilterService.Filter(filteredVariableGroup.Variables, keyRegex);
+        var filteredVariables = variableFilterService.Filter(filteredVariableGroup.Variables, keyRegex);
         return CollectVariables(valueRegex, filteredVariableGroup, project, filteredVariables);
     }
 

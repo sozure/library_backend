@@ -14,36 +14,18 @@ using VGManager.Library.Services.Settings;
 
 namespace VGManager.Library.Services;
 
-public partial class VariableService : IVariableService
+public partial class VariableService(
+    IAdapterCommunicator adapterCommunicator,
+    IVGAddColdRepository additionColdRepository,
+    IVGDeleteColdRepository deletedColdRepository,
+    IVGUpdateColdRepository editionColdRepository,
+    IVariableFilterService variableFilterService,
+    IOptions<OrganizationSettings> organizationSettings,
+    ILogger<VariableService> logger
+        ) : IVariableService
 {
-    private readonly IAdapterCommunicator _adapterCommunicator;
-    private readonly IVGAddColdRepository _additionColdRepository;
-    private readonly IVGDeleteColdRepository _deletionColdRepository;
-    private readonly IVGUpdateColdRepository _editionColdRepository;
-    private readonly IVariableFilterService _variableFilterService;
-    private readonly OrganizationSettings _organizationSettings;
-    private readonly ILogger _logger;
-
+    private readonly OrganizationSettings _organizationSettings = organizationSettings.Value;
     private readonly string SecretVGType = "AzureKeyVault";
-
-    public VariableService(
-        IAdapterCommunicator adapterCommunicator,
-        IVGAddColdRepository additionColdRepository,
-        IVGDeleteColdRepository deletedColdRepository,
-        IVGUpdateColdRepository editionColdRepository,
-        IVariableFilterService variableFilterService,
-        IOptions<OrganizationSettings> organizationSettings,
-        ILogger<VariableService> logger
-        )
-    {
-        _adapterCommunicator = adapterCommunicator;
-        _additionColdRepository = additionColdRepository;
-        _deletionColdRepository = deletedColdRepository;
-        _editionColdRepository = editionColdRepository;
-        _variableFilterService = variableFilterService;
-        _organizationSettings = organizationSettings.Value;
-        _logger = logger;
-    }
 
     public async Task<AdapterStatus?> UpdateVariableGroupsAsync(
         VariableGroupUpdateModel variableGroupUpdateModel,
@@ -53,7 +35,7 @@ public partial class VariableService : IVariableService
     {
         variableGroupUpdateModel.ContainsSecrets = false;
         variableGroupUpdateModel.FilterAsRegex = filterAsRegex;
-        (var isSuccess, var response) = await _adapterCommunicator.CommunicateWithAdapterAsync(
+        (var isSuccess, var response) = await adapterCommunicator.CommunicateWithAdapterAsync(
             variableGroupUpdateModel,
             CommandTypes.UpdateVGRequest,
             cancellationToken
@@ -91,7 +73,7 @@ public partial class VariableService : IVariableService
 
             if (_organizationSettings.Organizations.Contains(org))
             {
-                await _editionColdRepository.AddEntityAsync(entity, cancellationToken);
+                await editionColdRepository.AddEntityAsync(entity, cancellationToken);
             }
 
             return adapterResult;
@@ -106,7 +88,7 @@ public partial class VariableService : IVariableService
     {
         variableGroupAddModel.ContainsSecrets = false;
         variableGroupAddModel.FilterAsRegex = false;
-        (var isSuccess, var response) = await _adapterCommunicator.CommunicateWithAdapterAsync(
+        (var isSuccess, var response) = await adapterCommunicator.CommunicateWithAdapterAsync(
             variableGroupAddModel,
             CommandTypes.AddVGRequest,
             cancellationToken
@@ -140,7 +122,7 @@ public partial class VariableService : IVariableService
 
             if (_organizationSettings.Organizations.Contains(org))
             {
-                await _additionColdRepository.AddEntityAsync(entity, cancellationToken);
+                await additionColdRepository.AddEntityAsync(entity, cancellationToken);
             }
         }
         return adapterResult;
@@ -154,7 +136,7 @@ public partial class VariableService : IVariableService
     {
         variableGroupModel.ContainsSecrets = false;
         variableGroupModel.FilterAsRegex = filterAsRegex;
-        (var isSuccess, var response) = await _adapterCommunicator.CommunicateWithAdapterAsync(
+        (var isSuccess, var response) = await adapterCommunicator.CommunicateWithAdapterAsync(
             variableGroupModel,
             CommandTypes.DeleteVGRequest,
             cancellationToken
@@ -188,7 +170,7 @@ public partial class VariableService : IVariableService
 
             if (_organizationSettings.Organizations.Contains(org))
             {
-                await _deletionColdRepository.AddEntityAsync(entity, cancellationToken);
+                await deletedColdRepository.AddEntityAsync(entity, cancellationToken);
             }
         }
 
@@ -235,7 +217,7 @@ public partial class VariableService : IVariableService
             KeyFilter = variableGroupModel.KeyFilter,
         };
 
-        (var isSuccess, var response) = await _adapterCommunicator.CommunicateWithAdapterAsync(
+        (var isSuccess, var response) = await adapterCommunicator.CommunicateWithAdapterAsync(
             request,
             CommandTypes.GetAllVGRequest,
             cancellationToken
