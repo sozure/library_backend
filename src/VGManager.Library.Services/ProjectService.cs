@@ -9,17 +9,10 @@ using VGManager.Library.Services.Interfaces;
 
 namespace VGManager.Library.Services;
 
-public class ProjectService : IProjectService
+public class ProjectService(
+    IAdapterCommunicator adapterCommunicator
+        ) : IProjectService
 {
-    private readonly IAdapterCommunicator _adapterCommunicator;
-
-    public ProjectService(
-        IAdapterCommunicator adapterCommunicator
-        )
-    {
-        _adapterCommunicator = adapterCommunicator;
-    }
-
     public async Task<AdapterResponseModel<IEnumerable<ProjectRequest>>> GetProjectsAsync(
         BaseModel projectModel,
         CancellationToken cancellationToken = default
@@ -31,7 +24,7 @@ public class ProjectService : IProjectService
             PAT = projectModel.PAT
         };
 
-        (var isSuccess, var response) = await _adapterCommunicator.CommunicateWithAdapterAsync(
+        (var isSuccess, var response) = await adapterCommunicator.CommunicateWithAdapterAsync(
             request,
             CommandTypes.GetProjectsRequest,
             cancellationToken

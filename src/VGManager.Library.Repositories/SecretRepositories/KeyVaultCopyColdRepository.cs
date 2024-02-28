@@ -5,12 +5,8 @@ using VGManager.Library.Repositories.Interfaces.SecretRepositories;
 
 namespace VGManager.Library.Repositories.SecretRepositories;
 
-public class KeyVaultCopyColdRepository : SqlRepository<KeyVaultCopyEntity>, IKeyVaultCopyColdRepository
+public class KeyVaultCopyColdRepository(OperationsDbContext dbContext) : SqlRepository<KeyVaultCopyEntity>(dbContext), IKeyVaultCopyColdRepository
 {
-    public KeyVaultCopyColdRepository(OperationsDbContext dbContext) : base(dbContext)
-    {
-    }
-
     public async Task AddEntityAsync(KeyVaultCopyEntity entity, CancellationToken cancellationToken = default)
     {
         await AddAsync(entity, cancellationToken);

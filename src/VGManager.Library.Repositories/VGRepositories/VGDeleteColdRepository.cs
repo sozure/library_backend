@@ -5,12 +5,8 @@ using VGManager.Library.Repositories.Interfaces.VGRepositories;
 
 namespace VGManager.Library.Repositories.VGRepositories;
 
-public class VGDeleteColdRepository : SqlRepository<VGDeleteEntity>, IVGDeleteColdRepository
+public class VGDeleteColdRepository(OperationsDbContext dbContext) : SqlRepository<VGDeleteEntity>(dbContext), IVGDeleteColdRepository
 {
-    public VGDeleteColdRepository(OperationsDbContext dbContext) : base(dbContext)
-    {
-    }
-
     public async Task AddEntityAsync(VGDeleteEntity entity, CancellationToken cancellationToken = default)
     {
         await AddAsync(entity, cancellationToken);

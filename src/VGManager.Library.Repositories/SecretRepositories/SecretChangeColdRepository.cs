@@ -5,12 +5,8 @@ using VGManager.Library.Repositories.Interfaces.SecretRepositories;
 
 namespace VGManager.Library.Repositories.SecretRepositories;
 
-public class SecretChangeColdRepository : SqlRepository<SecretChangeEntity>, ISecretChangeColdRepository
+public class SecretChangeColdRepository(OperationsDbContext dbContext) : SqlRepository<SecretChangeEntity>(dbContext), ISecretChangeColdRepository
 {
-    public SecretChangeColdRepository(OperationsDbContext dbContext) : base(dbContext)
-    {
-    }
-
     public async Task AddEntityAsync(SecretChangeEntity entity, CancellationToken cancellationToken = default)
     {
         await AddAsync(entity, cancellationToken);

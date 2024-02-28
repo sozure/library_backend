@@ -15,33 +15,20 @@ using VGManager.Library.Services.Models.Secrets.Results;
 
 namespace VGManager.Library.Services;
 
-public class KeyVaultService : IKeyVaultService
+public class KeyVaultService(
+    IAdapterCommunicator adapterCommunicator,
+    ISecretChangeColdRepository secretChangeColdRepository,
+    IKeyVaultCopyColdRepository keyVaultCopyColdRepository,
+    ILogger<KeyVaultService> logger
+        ) : IKeyVaultService
 {
-    private readonly IAdapterCommunicator _adapterCommunicator;
-    private readonly ISecretChangeColdRepository _secretChangeColdRepository;
-    private readonly IKeyVaultCopyColdRepository _keyVaultCopyColdRepository;
-    private readonly ILogger _logger;
-
-    public KeyVaultService(
-        IAdapterCommunicator adapterCommunicator,
-        ISecretChangeColdRepository secretChangeColdRepository,
-        IKeyVaultCopyColdRepository keyVaultCopyColdRepository,
-        ILogger<KeyVaultService> logger
-        )
-    {
-        _adapterCommunicator = adapterCommunicator;
-        _secretChangeColdRepository = secretChangeColdRepository;
-        _keyVaultCopyColdRepository = keyVaultCopyColdRepository;
-        _logger = logger;
-    }
-
     public async Task<(string?, IEnumerable<string>)> GetKeyVaultsAsync(
         SecretBaseModel secretModel,
         CancellationToken cancellationToken = default
         )
     {
         var request = GetBaseSecretRequest(secretModel);
-        (var isSuccess, var response) = await _adapterCommunicator.CommunicateWithAdapterAsync(request, CommandTypes.GetKeyVaultsRequest, cancellationToken);
+        (var isSuccess, var response) = await adapterCommunicator.CommunicateWithAdapterAsync(request, CommandTypes.GetKeyVaultsRequest, cancellationToken);
 
         if (!isSuccess)
         {
@@ -85,7 +72,7 @@ public class KeyVaultService : IKeyVaultService
             TenantId = secretModel.TenantId
         };
 
-        (var isSuccess, var response) = await _adapterCommunicator.CommunicateWithAdapterAsync(
+        (var isSuccess, var response) = await adapterCommunicator.CommunicateWithAdapterAsync(
             request,
             CommandTypes.GetSecretsRequest,
             cancellationToken
@@ -140,7 +127,7 @@ public class KeyVaultService : IKeyVaultService
                     AdditionalData = parameters
                 };
 
-                (var isSuccess, var response) = await _adapterCommunicator.CommunicateWithAdapterAsync(
+                (var isSuccess, var response) = await adapterCommunicator.CommunicateWithAdapterAsync(
                     request,
                     CommandTypes.AddKeyVaultSecretRequest,
                     cancellationToken
@@ -163,13 +150,13 @@ public class KeyVaultService : IKeyVaultService
                 User = secretCopyModel.UserName
             };
 
-            await _keyVaultCopyColdRepository.AddEntityAsync(entity, cancellationToken);
+            await keyVaultCopyColdRepository.AddEntityAsync(entity, cancellationToken);
 
             return AdapterStatus.Success;
         }
         catch (Azure.RequestFailedException ex)
         {
-            _logger.LogError(ex, "Couldn't copy secrets from {fromKeyVault} to {toKeyVault}.", secretCopyModel.FromKeyVault, secretCopyModel.ToKeyVault);
+            logger.LogError(ex, "Couldn't copy secrets from {fromKeyVault} to {toKeyVault}.", secretCopyModel.FromKeyVault, secretCopyModel.ToKeyVault);
             return AdapterStatus.Unauthorized;
         }
     }
@@ -181,7 +168,7 @@ public class KeyVaultService : IKeyVaultService
     {
         var secretList = new List<DeletedSecretResult>();
         var request = GetBaseSecretRequest(secretModel);
-        (var isSuccess, var response) = await _adapterCommunicator.CommunicateWithAdapterAsync(
+        (var isSuccess, var response) = await adapterCommunicator.CommunicateWithAdapterAsync(
             request,
             CommandTypes.GetDeletedSecretsRequest,
             cancellationToken
@@ -235,7 +222,7 @@ public class KeyVaultService : IKeyVaultService
             TenantId = secretModel.TenantId
         };
 
-        (var isSuccess, var response) = await _adapterCommunicator.CommunicateWithAdapterAsync(
+        (var isSuccess, var response) = await adapterCommunicator.CommunicateWithAdapterAsync(
             request,
             CommandTypes.GetSecretsRequest,
             cancellationToken
@@ -270,7 +257,7 @@ public class KeyVaultService : IKeyVaultService
         )
     {
         var request = GetBaseSecretRequest(secretModel);
-        (var isSuccess, var response) = await _adapterCommunicator.CommunicateWithAdapterAsync(
+        (var isSuccess, var response) = await adapterCommunicator.CommunicateWithAdapterAsync(
             request,
             CommandTypes.GetDeletedSecretsRequest,
             cancellationToken
@@ -312,7 +299,7 @@ public class KeyVaultService : IKeyVaultService
                 User = secretModel.UserName
             };
 
-            await _secretChangeColdRepository.AddEntityAsync(entity, cancellationToken);
+            await secretChangeColdRepository.AddEntityAsync(entity, cancellationToken);
             return AdapterStatus.Success;
         }
         return AdapterStatus.Unknown;
@@ -325,7 +312,7 @@ public class KeyVaultService : IKeyVaultService
         )
     {
         var request = GetBaseSecretRequest(secretCopyModel, from);
-        (var isSuccess, var response) = await _adapterCommunicator.CommunicateWithAdapterAsync(
+        (var isSuccess, var response) = await adapterCommunicator.CommunicateWithAdapterAsync(
             request,
             CommandTypes.GetAllSecretsRequest,
             cancellationToken
@@ -371,7 +358,7 @@ public class KeyVaultService : IKeyVaultService
                 KeyVaultName = secretModel.KeyVaultName,
                 TenantId = secretModel.TenantId
             };
-            (var isSuccess, var response) = await _adapterCommunicator.CommunicateWithAdapterAsync(
+            (var isSuccess, var response) = await adapterCommunicator.CommunicateWithAdapterAsync(
                 recoverReq,
                 CommandTypes.RecoverSecretRequest,
                 cancellationToken
@@ -409,7 +396,7 @@ public class KeyVaultService : IKeyVaultService
         }
         catch (RegexParseException ex)
         {
-            _logger.LogError(ex, "Couldn't parse and create regex. Value: {value}.", filter);
+            logger.LogError(ex, "Couldn't parse and create regex. Value: {value}.", filter);
             return Enumerable.Empty<AdapterResponseModel<SimplifiedSecretResponse?>>();
         }
         var relevantSecrets = keyVaultSecrets.Where(secret => regex.IsMatch(secret?.Data?.SecretName.ToLower() ?? string.Empty)).ToList();
@@ -433,7 +420,7 @@ public class KeyVaultService : IKeyVaultService
         }
         catch (RegexParseException ex)
         {
-            _logger.LogError(ex, "Couldn't parse and create regex. Value: {value}.", filter);
+            logger.LogError(ex, "Couldn't parse and create regex. Value: {value}.", filter);
             return Enumerable.Empty<Dictionary<string, object>>();
         }
         var relevantSecrets = keyVaultSecrets.Where(
@@ -451,7 +438,7 @@ public class KeyVaultService : IKeyVaultService
         }
         catch (RegexParseException ex)
         {
-            _logger.LogError(ex, "Couldn't parse and create regex. Value: {value}.", filter);
+            logger.LogError(ex, "Couldn't parse and create regex. Value: {value}.", filter);
             return Enumerable.Empty<DeletedSecret>();
         }
         return keyVaultSecrets.Where(secret => regex.IsMatch(secret?.Name.ToLower() ?? string.Empty)).ToList();
@@ -501,7 +488,7 @@ public class KeyVaultService : IKeyVaultService
                     KeyVaultName = secretModel.KeyVaultName,
                     TenantId = secretModel.TenantId
                 };
-                (var isSuccess, var response) = await _adapterCommunicator.CommunicateWithAdapterAsync(
+                (var isSuccess, var response) = await adapterCommunicator.CommunicateWithAdapterAsync(
                     request,
                     CommandTypes.DeleteSecretRequest,
                     cancellationToken
@@ -528,7 +515,7 @@ public class KeyVaultService : IKeyVaultService
                 User = secretModel.UserName
 
             };
-            await _secretChangeColdRepository.AddEntityAsync(entity, cancellationToken);
+            await secretChangeColdRepository.AddEntityAsync(entity, cancellationToken);
             return AdapterStatus.Success;
         }
 

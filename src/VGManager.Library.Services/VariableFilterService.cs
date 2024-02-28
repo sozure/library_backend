@@ -1,4 +1,3 @@
-using Microsoft.TeamFoundation.DistributedTask.WebApi;
 using System.Text.RegularExpressions;
 using VGManager.Library.Services.Interfaces;
 

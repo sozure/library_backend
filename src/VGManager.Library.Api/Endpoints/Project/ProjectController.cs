@@ -12,17 +12,8 @@ namespace VGManager.Library.Api.Endpoints.Project;
 [Route("api/[controller]")]
 [ApiController]
 [EnableCors("_allowSpecificOrigins")]
-public class ProjectController : ControllerBase
+public class ProjectController(IProjectService projectService, IMapper mapper) : ControllerBase
 {
-    private readonly IProjectService _projectService;
-    private readonly IMapper _mapper;
-
-    public ProjectController(IProjectService projectService, IMapper mapper)
-    {
-        _projectService = projectService;
-        _mapper = mapper;
-    }
-
     [HttpPost("Get", Name = "getprojects")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -32,13 +23,13 @@ public class ProjectController : ControllerBase
         CancellationToken cancellationToken
     )
     {
-        var projectModel = _mapper.Map<BaseModel>(request);
-        var projects = await _projectService.GetProjectsAsync(projectModel, cancellationToken);
+        var projectModel = mapper.Map<BaseModel>(request);
+        var projects = await projectService.GetProjectsAsync(projectModel, cancellationToken);
 
         var result = new AdapterResponseModel<IEnumerable<ProjectResponse>>()
         {
             Status = projects.Status,
-            Data = _mapper.Map<IEnumerable<ProjectResponse>>(projects.Data)
+            Data = mapper.Map<IEnumerable<ProjectResponse>>(projects.Data)
         };
 
         return Ok(result);

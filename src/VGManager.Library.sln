@@ -31,8 +31,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{E205BBB4
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VGManager.Library.Api.Tests", "VGManager.Library.Api.Tests\VGManager.Library.Api.Tests.csproj", "{713F1E13-1F16-4D7C-B57C-822FFF2951A3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VGManager.Library.AzureAdapter.Tests", "VGManager.Library.AzureAdapter.Tests\VGManager.Library.AzureAdapter.Tests.csproj", "{A9BBBACD-EEB0-4119-B35B-8F0A71E0676E}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -67,17 +65,12 @@ Global
 		{713F1E13-1F16-4D7C-B57C-822FFF2951A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{713F1E13-1F16-4D7C-B57C-822FFF2951A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{713F1E13-1F16-4D7C-B57C-822FFF2951A3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A9BBBACD-EEB0-4119-B35B-8F0A71E0676E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A9BBBACD-EEB0-4119-B35B-8F0A71E0676E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A9BBBACD-EEB0-4119-B35B-8F0A71E0676E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A9BBBACD-EEB0-4119-B35B-8F0A71E0676E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{713F1E13-1F16-4D7C-B57C-822FFF2951A3} = {E205BBB4-1E3F-4F21-92AE-2DCA6644C200}
-		{A9BBBACD-EEB0-4119-B35B-8F0A71E0676E} = {E205BBB4-1E3F-4F21-92AE-2DCA6644C200}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8495BAAF-2469-457B-82F0-A0EF321DAE58}

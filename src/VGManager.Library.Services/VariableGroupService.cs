@@ -11,20 +11,11 @@ using VGManager.Library.Services.Interfaces;
 
 namespace VGManager.Library.Services;
 
-public class VariableGroupService : IVariableGroupService
+public class VariableGroupService(
+    IAdapterCommunicator adapterCommunicator,
+    ILogger<VariableGroupService> logger
+        ) : IVariableGroupService
 {
-    private readonly IAdapterCommunicator _adapterCommunicator;
-    private readonly ILogger _logger;
-
-    public VariableGroupService(
-        IAdapterCommunicator adapterCommunicator,
-        ILogger<VariableGroupService> logger
-        )
-    {
-        _adapterCommunicator = adapterCommunicator;
-        _logger = logger;
-    }
-
     public async Task<AdapterResponseModel<IEnumerable<VariableGroup>>> GetVariableGroupsAsync(
         VariableGroupModel variableGroupModel,
         IEnumerable<string>? potentialVariableGroups,
@@ -32,7 +23,7 @@ public class VariableGroupService : IVariableGroupService
         CancellationToken cancellationToken = default
         )
     {
-        _logger.LogInformation("Get variable groups from {project} Azure project.", variableGroupModel.Project);
+        logger.LogInformation("Get variable groups from {project} Azure project.", variableGroupModel.Project);
 
         var request = new GetVGRequest()
         {
@@ -47,7 +38,7 @@ public class VariableGroupService : IVariableGroupService
             KeyFilter = variableGroupModel.KeyFilter,
         };
 
-        (var isSuccess, var response) = await _adapterCommunicator.CommunicateWithAdapterAsync(
+        (var isSuccess, var response) = await adapterCommunicator.CommunicateWithAdapterAsync(
             request,
             CommandTypes.GetAllVGRequest,
             cancellationToken
