@@ -209,30 +209,4 @@ public partial class VariableGroupController
             return await GetBaseResultAsync(vgRequest, cancellationToken);
         }
     }
-
-    private static AdapterResponseModel<IEnumerable<VariableGroupResponse>> GetResult(AdapterResponseModel<List<VariableResponse>> variableResponses)
-    {
-        var listResult = new List<VariableGroupResponse>();
-        var result = new AdapterResponseModel<IEnumerable<VariableGroupResponse>>
-        {
-            Status = variableResponses.Status
-        };
-
-        foreach (var variableResponse in variableResponses.Data)
-        {
-            if (!listResult.Exists(
-                item => item.VariableGroupName == variableResponse.VariableGroupName && item.Project == variableResponse.Project
-                ))
-            {
-                listResult.Add(new()
-                {
-                    VariableGroupName = variableResponse.VariableGroupName,
-                    Project = variableResponse.Project
-                });
-            }
-        }
-
-        result.Data = listResult;
-        return result;
-    }
 }

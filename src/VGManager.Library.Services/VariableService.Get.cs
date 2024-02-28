@@ -101,7 +101,7 @@ public partial class VariableService
         return CollectVariables(valueRegex, filteredVariableGroup, project, filteredVariables);
     }
 
-    private IEnumerable<VariableResult> CollectVariables(
+    private List<VariableResult> CollectVariables(
         Regex? valueRegex,
         SimplifiedVGResponse<string> filteredVariableGroup,
         string project,
@@ -131,7 +131,7 @@ public partial class VariableService
         return result;
     }
 
-    private IEnumerable<VariableResult> AddVariableResult(
+    private List<VariableResult> AddVariableResult(
         SimplifiedVGResponse<string> filteredVariableGroup,
         KeyValuePair<string, string> filteredVariable,
         string variableValue,

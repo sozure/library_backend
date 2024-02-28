@@ -6,6 +6,7 @@ using VGManager.Adapter.Client.Interfaces;
 using VGManager.Adapter.Models.Models;
 using VGManager.Adapter.Models.Response;
 using VGManager.Adapter.Models.StatusEnums;
+using VGManager.Library.Api.Common;
 using VGManager.Library.Api.Endpoints.Project;
 using VGManager.Library.Api.Endpoints.Project.Response;
 using VGManager.Library.Api.MapperProfiles;
@@ -49,7 +50,7 @@ public class ProjectControllerTests
         var firstProjectName = "Project1";
         var secondProjectName = "Project2";
 
-        var request = new ProjectRequest
+        var request = new BasicRequest
         {
             Organization = organization,
             PAT = pat
