@@ -10,6 +10,11 @@
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
 
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Data.Sqlite.Core" Version="8.0.2" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.2" />
+    </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\VGManager.Library.Api\VGManager.Library.Api.csproj" />
   </ItemGroup>
