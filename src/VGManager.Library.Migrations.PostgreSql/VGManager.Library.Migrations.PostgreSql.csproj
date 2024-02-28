@@ -1,13 +1,14 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
       <ProjectGuid>561150AA-16B3-420C-B0EA-831526470505</ProjectGuid>
       <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+      <SonarQubeExclude>true</SonarQubeExclude>
   </PropertyGroup>
 
-  <ItemGroup>
+    <ItemGroup>
     <ProjectReference Include="..\VGManager.Library.Repositories\VGManager.Library.Repositories.csproj" />
   </ItemGroup>
 
