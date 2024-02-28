@@ -19,7 +19,7 @@ public class SecretController(IKeyVaultService keyVaultService, IMapper mapper) 
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult<AdapterResponseModel<IEnumerable<string>, string>>> GetKeyVaults(
+    public async Task<ActionResult<AdapterResponseModel<IEnumerable<string>, string>>> GetKeyVaultsAsync(
         [FromBody] SecretBaseRequest request,
         CancellationToken cancellationToken
         )
@@ -88,7 +88,7 @@ public class SecretController(IKeyVaultService keyVaultService, IMapper mapper) 
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    public async Task<ActionResult<AdapterResponseModel<IEnumerable<DeletedSecretResponse>>>> GetDeleted(
+    public async Task<ActionResult<AdapterResponseModel<IEnumerable<DeletedSecretResponse>>>> GetDeletedAsync(
         [FromBody] SecretRequest request,
         CancellationToken cancellationToken
         )

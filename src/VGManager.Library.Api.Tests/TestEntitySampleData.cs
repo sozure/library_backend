@@ -1,3 +1,4 @@
+using VGManager.Library.Entities.SecretEntities;
 using VGManager.Library.Entities.VGEntities;
 
 namespace VGManager.Library.Api.Tests;
@@ -45,6 +46,31 @@ public static class TestEntitySampleData
             Date = DateTime.Now,
             User = "beviktor95@gmail.com",
             VariableGroupFilter = "VGManager.Library.Api",
+        };
+    }
+
+    public static SecretChangeEntity GetSecretChangeEntity()
+    {
+        return new()
+        {
+            Id = "xyz",
+            Date = DateTime.Now,
+            User = "TestUser",
+            ChangeType = SecretChangeType.Delete,
+            KeyVaultName = "TestKeyVault",
+            SecretNameRegex = "TestSecret"
+        };
+    }
+
+    public static KeyVaultCopyEntity GetKeyVaultCopyEntity()
+    {
+        return new()
+        {
+            Id = "xyz",
+            DestinationKeyVault = "TestKeyVault1",
+            OriginalKeyVault = "TestKeyVault2",
+            Date = DateTime.Now,
+            User = "TestUser"
         };
     }
 }

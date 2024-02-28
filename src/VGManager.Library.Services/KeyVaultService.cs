@@ -207,7 +207,6 @@ public class KeyVaultService(
         return GetResult(status, secretList);
     }
 
-
     public async Task<AdapterStatus> DeleteAsync(
         SecretModel secretModel,
         CancellationToken cancellationToken = default

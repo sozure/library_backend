@@ -23,10 +23,14 @@ public static class DbContextTestBase
         var addition = TestEntitySampleData.GetAddEntity();
         var deletion = TestEntitySampleData.GetDeleteEntity();
         var update = TestEntitySampleData.GetUpdateEntity();
+        var secretChange = TestEntitySampleData.GetSecretChangeEntity();
+        var keyVaultCopy = TestEntitySampleData.GetKeyVaultCopyEntity();
 
         dbContext.VGAdditions.Add(addition);
         dbContext.VGDeletions.Add(deletion);
         dbContext.VGEditions.Add(update);
+        dbContext.SecretChanges.Add(secretChange);
+        dbContext.KeyVaultCopies.Add(keyVaultCopy);
         dbContext.SaveChanges();
 
         return new OperationsDbContext(dbOptions);
