@@ -1,5 +1,6 @@
 using VGManager.Library.Entities.SecretEntities;
 using VGManager.Library.Entities.VGEntities;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace VGManager.Library.Api.Tests;
 
@@ -14,7 +15,7 @@ public static class TestEntitySampleData
             Value = "PostgreSql",
             Organization = "VGManager",
             Project = "VGManager.Library.Api",
-            Date = DateTime.Now,
+            Date = new DateTime(2024, 2, 28, 10, 0, 0, DateTimeKind.Utc),
             User = "beviktor95@gmail.com",
             VariableGroupFilter = "VGManager.Library.Api"
         };
@@ -28,7 +29,7 @@ public static class TestEntitySampleData
             Key = "DatabaseProvider",
             Organization = "VGManager",
             Project = "VGManager.Library.Api",
-            Date = DateTime.Now,
+            Date = new DateTime(2024, 2, 28, 11, 0, 0, DateTimeKind.Utc),
             User = "beviktor95@gmail.com",
             VariableGroupFilter = "VGManager.Library.Api",
             NewValue = "PostgreSql"
@@ -43,7 +44,7 @@ public static class TestEntitySampleData
             Key = "DatabaseProvider",
             Organization = "VGManager",
             Project = "VGManager.Library.Api",
-            Date = DateTime.Now,
+            Date = new DateTime(2024, 2, 28, 12, 0, 0, DateTimeKind.Utc),
             User = "beviktor95@gmail.com",
             VariableGroupFilter = "VGManager.Library.Api",
         };
@@ -54,7 +55,7 @@ public static class TestEntitySampleData
         return new()
         {
             Id = "xyz",
-            Date = DateTime.Now,
+            Date = new DateTime(2024, 2, 28, 13, 0, 0, DateTimeKind.Utc),
             User = "TestUser",
             ChangeType = SecretChangeType.Delete,
             KeyVaultName = "TestKeyVault",
@@ -69,7 +70,7 @@ public static class TestEntitySampleData
             Id = "xyz",
             DestinationKeyVault = "TestKeyVault1",
             OriginalKeyVault = "TestKeyVault2",
-            Date = DateTime.Now,
+            Date = new DateTime(2024, 2, 28, 14, 0, 0, DateTimeKind.Utc),
             User = "TestUser"
         };
     }
