@@ -359,7 +359,8 @@ public static class TestSampleData
             SecretFilter = secretFilter,
             TenantId = tenantId,
             ClientId = clientId,
-            ClientSecret = clientSecret
+            ClientSecret = clientSecret,
+            UserName = "TestUser"
         };
 
     public static SecretCopyRequest GetRequest(
@@ -377,7 +378,8 @@ public static class TestSampleData
             ClientSecret = clientSecret,
             FromKeyVault = fromKeyVault,
             ToKeyVault = toKeyVault,
-            OverrideSecret = overrideSecret
+            OverrideSecret = overrideSecret,
+            UserName = "TestUser"
         };
 
     public static AdapterResponseModel<IEnumerable<SecretResponse>> GetSecretsGetResponse()

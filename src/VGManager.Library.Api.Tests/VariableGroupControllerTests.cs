@@ -26,11 +26,7 @@ namespace VGManager.Libary.Api.Tests;
 public class VariableGroupControllerTests
 {
     private VariableGroupController _controller;
-    private AdapterCommunicator _adapterCommunicator;
     private Mock<IVGManagerAdapterClientService> _clientService;
-    private VGAddColdRepository _additionColdRepository;
-    private VGDeleteColdRepository _deletionColdRepository;
-    private VGUpdateColdRepository _editionColdRepository;
 
     private OperationsDbContext _operationsDbContext = null!;
 
@@ -55,28 +51,28 @@ public class VariableGroupControllerTests
         _operationsDbContext = DbContextTestBase.CreateDatabaseContext();
 
         _clientService = new(MockBehavior.Strict);
-        _adapterCommunicator = new(_clientService.Object);
-        _additionColdRepository = new(_operationsDbContext);
-        _deletionColdRepository = new(_operationsDbContext);
-        _editionColdRepository = new(_operationsDbContext);
+        var adapterCommunicator = new AdapterCommunicator(_clientService.Object);
+        var additionColdRepository = new VGAddColdRepository(_operationsDbContext);
+        var deletionColdRepository = new VGDeleteColdRepository(_operationsDbContext);
+        var editionColdRepository = new VGUpdateColdRepository(_operationsDbContext);
 
         var variableFilterService = new VariableFilterService();
         var variableService = new VariableService(
-            _adapterCommunicator,
-            _additionColdRepository,
-            _deletionColdRepository,
-            _editionColdRepository,
+            adapterCommunicator,
+            additionColdRepository,
+            deletionColdRepository,
+            editionColdRepository,
             variableFilterService,
             settings,
             variableServiceLoggerMock.Object
             );
 
         var vgService = new VariableGroupService(
-            _adapterCommunicator,
+            adapterCommunicator,
             variableGroupServiceLoggerMock.Object
             );
 
-        var projectService = new ProjectService(_adapterCommunicator);
+        var projectService = new ProjectService(adapterCommunicator);
         _controller = new(variableService, vgService, projectService, mapper);
     }
 

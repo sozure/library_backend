@@ -1,276 +1,542 @@
-//using AutoMapper;
-//using Azure.Security.KeyVault.Secrets;
-//using Microsoft.AspNetCore.Mvc;
-//using Microsoft.Extensions.Logging;
-//using VGManager.Adapter.Models.Models;
-//using VGManager.Adapter.Models.StatusEnums;
-//using VGManager.Library.Api.Endpoints.Secret;
-//using VGManager.Library.Api.Endpoints.Secret.Response;
-//using VGManager.Library.Api.MapperProfiles;
-//using VGManager.Library.AzureAdapter.Interfaces;
-//using VGManager.Library.Entities.SecretEntities;
-//using VGManager.Library.Repositories.Interfaces.SecretRepositories;
-//using VGManager.Library.Services;
-//using VGManager.Library.Services.Interfaces;
+using AutoMapper;
+using Azure.Security.KeyVault.Secrets;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using System.Text.Json;
+using VGManager.Adapter.Client.Interfaces;
+using VGManager.Adapter.Models.Models;
+using VGManager.Adapter.Models.Response;
+using VGManager.Adapter.Models.StatusEnums;
+using VGManager.Library.Api.Endpoints.Secret;
+using VGManager.Library.Api.Endpoints.Secret.Request;
+using VGManager.Library.Api.Endpoints.Secret.Response;
+using VGManager.Library.Api.MapperProfiles;
+using VGManager.Library.Api.Tests;
+using VGManager.Library.Repositories.DbContexts;
+using VGManager.Library.Repositories.SecretRepositories;
+using VGManager.Library.Services;
 
-//namespace VGManager.Libary.Api.Tests;
+namespace VGManager.Libary.Api.Tests;
 
-//[TestFixture]
-//public class SecretControllerTests
-//{
-//    private SecretController _controller;
-//    private IKeyVaultService _keyVaultService;
-//    private Mock<IKeyVaultAdapter> _adapter;
-//    private Mock<ISecretChangeColdRepository> _secretRepository;
-//    private Mock<IKeyVaultCopyColdRepository> _keyVaultRepository;
+[TestFixture]
+public class SecretControllerTests
+{
+    private SecretController _controller;
+    private Mock<IVGManagerAdapterClientService> _clientService;
 
-//    [SetUp]
-//    public void Setup()
-//    {
-//        var mapperConfiguration = new MapperConfiguration(cfg =>
-//        {
-//            cfg.AddProfile(typeof(SecretProfile));
-//        });
+    private OperationsDbContext _operationsDbContext = null!;
 
-//        var mapper = mapperConfiguration.CreateMapper();
+    [SetUp]
+    public void Setup()
+    {
+        var mapperConfiguration = new MapperConfiguration(cfg =>
+        {
+            cfg.AddProfile(typeof(SecretProfile));
+        });
 
-//        _adapter = new(MockBehavior.Strict);
-//        var loggerMock = new Mock<ILogger<KeyVaultService>>();
+        var mapper = mapperConfiguration.CreateMapper();
+        var loggerMock = new Mock<ILogger<KeyVaultService>>();
 
-//        _keyVaultRepository = new(MockBehavior.Strict);
-//        _secretRepository = new(MockBehavior.Strict);
+        _operationsDbContext = DbContextTestBase.CreateDatabaseContext();
 
-//        _keyVaultService = new KeyVaultService(_adapter.Object, _secretRepository.Object, _keyVaultRepository.Object, loggerMock.Object);
-//        _controller = new(_keyVaultService, mapper);
-//    }
+        _clientService = new(MockBehavior.Strict);
+        var adapterCommunicator = new AdapterCommunicator(_clientService.Object);
 
-//    [Test]
-//    public async Task GetAsync_Works_well()
-//    {
-//        // Arrange
-//        var keyVaultName = "KeyVaultName1";
-//        var tenantId = "tenantId1";
-//        var clientId = "clientId1";
-//        var clientSecret = "clientSecret1";
-//        var secretFilter = "SecretFilter";
-//        var request = TestSampleData.GetRequest(keyVaultName, secretFilter, tenantId, clientId, clientSecret);
+        var secretRepository = new SecretChangeColdRepository(_operationsDbContext);
+        var keyVaultCopyRepository = new KeyVaultCopyColdRepository(_operationsDbContext);
+        var keyVaultService = new KeyVaultService(adapterCommunicator, secretRepository, keyVaultCopyRepository, loggerMock.Object);
+        _controller = new(keyVaultService, mapper);
+    }
 
-//        var secretsEntity = TestSampleData.GetSecretsEntity();
-//        var secretsGetResponse = TestSampleData.GetSecretsGetResponse();
+    [Test]
+    public async Task GetKeyVaultsAsync_works_well()
+    {
+        // Arrange
+        var request = new SecretBaseRequest
+        {
+            TenantId = "tenantId1",
+            ClientId = "clientId1",
+            ClientSecret = "clientSecret",
+            UserName = "userName"
+        };
 
-//        _adapter.Setup(x => x.GetSecretsAsync(It.IsAny<CancellationToken>())).ReturnsAsync(secretsEntity);
-//        _adapter.Setup(x => x.Setup(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()));
+        var keyVaultResponse = new BaseResponse<Dictionary<string, object>>()
+        {
+            Data = new Dictionary<string, object>
+            {
+                { "Status", new { Name = "1" } },
+                { "Data", new Dictionary<string, object>
+                {
+                    ["subscription"] = "MyOwnSubscription1",
+                    ["keyVaults"] = new List<string>
+                    {
+                        "KeyVaultName1",
+                        "KeyVaultName2",
+                        "KeyVaultName3"
+                    }
+                }
+                }
+            },
+        };
 
-//        // Act
-//        var result = await _controller.GetAsync(request, default);
+        _clientService.Setup(x => x.SendAndReceiveMessageAsync("GetKeyVaultsRequest", It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((true, JsonSerializer.Serialize(keyVaultResponse)));
 
-//        // Assert
-//        result.Should().NotBeNull();
-//        result.Result.Should().BeOfType<OkObjectResult>();
-//        ((AdapterResponseModel<IEnumerable<SecretResponse>>)((OkObjectResult)result.Result!).Value!).Should().BeEquivalentTo(secretsGetResponse);
+        // Act
+        var result = await _controller.GetKeyVaultsAsync(request, default);
 
-//        _adapter.Verify(x => x.Setup(keyVaultName, tenantId, clientId, clientSecret), Times.Once);
-//        _adapter.Verify(x => x.GetSecretsAsync(default), Times.Once);
-//    }
+        // Assert
+        result.Should().NotBeNull();
+        result.Result.Should().BeOfType<OkObjectResult>();
+        _clientService.Verify(x => x.SendAndReceiveMessageAsync("GetKeyVaultsRequest", It.IsAny<string>(), default), Times.Once);
+    }
 
-//    [Test]
-//    public void GetDeleted_Works_well()
-//    {
-//        // Arrange
-//        var keyVaultName = "KeyVaultName1";
-//        var tenantId = "tenantId1";
-//        var clientId = "clientId1";
-//        var clientSecret = "clientSecret1";
-//        var secretFilter = "DeletedSecretFilter";
-//        var request = TestSampleData.GetRequest(keyVaultName, secretFilter, tenantId, clientId, clientSecret);
+    [Test]
+    public async Task GetAsync_Works_well()
+    {
+        // Arrange
+        var keyVaultName = "KeyVaultName1";
+        var tenantId = "tenantId1";
+        var clientId = "clientId1";
+        var clientSecret = "clientSecret1";
+        var secretFilter = "Secret";
+        var request = TestSampleData.GetRequest(keyVaultName, secretFilter, tenantId, clientId, clientSecret);
 
-//        var secretsEntity = TestSampleData.GetEmptyDeletedSecretsEntity();
-//        var secretsGetResponse = TestSampleData.GetEmptySecretsGetResponse1();
+        var secretsGetResponse = TestSampleData.GetSecretsGetResponse();
+        var secretResponse = new BaseResponse<AdapterResponseModel<IEnumerable<AdapterResponseModel<SimplifiedSecretResponse?>>>>()
+        {
+            Data = new AdapterResponseModel<IEnumerable<AdapterResponseModel<SimplifiedSecretResponse?>>>
+            {
+                Data = new List<AdapterResponseModel<SimplifiedSecretResponse?>>
+                {
+                    new()
+                    {
+                        Data = new SimplifiedSecretResponse
+                        {
+                            SecretName = "SecretFilter123",
+                            SecretValue = "3Kpu6gF214vAqHlzaX5G"
+                        }
+                    },
+                    new()
+                    {
+                        Data = new SimplifiedSecretResponse
+                        {
+                            SecretName = "SecretFilter456",
+                            SecretValue = "KCRQJ08PdFHU9Ly2pUI2"
+                        }
+                    },
+                    new()
+                    {
+                        Data = new SimplifiedSecretResponse
+                        {
+                            SecretName = "SecretFilter789",
+                            SecretValue = "ggl1oBLSiYNBliNQhsGW"
+                        }
+                    }
+                },
+                Status = AdapterStatus.Success
+            }
+        };
 
-//        _adapter.Setup(x => x.GetDeletedSecrets(It.IsAny<CancellationToken>())).Returns(secretsEntity);
-//        _adapter.Setup(x => x.Setup(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()));
+        _clientService.Setup(x => x.SendAndReceiveMessageAsync("GetSecretsRequest", It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((true, JsonSerializer.Serialize(secretResponse)));
 
-//        // Act
-//        var result = _controller.GetDeleted(request, default);
+        // Act
+        var result = await _controller.GetAsync(request, default);
 
-//        // Assert
-//        result.Should().NotBeNull();
-//        result.Result.Should().BeOfType<OkObjectResult>();
-//        ((AdapterResponseModel<IEnumerable<DeletedSecretResponse>>)((OkObjectResult)result.Result!).Value!).Should().BeEquivalentTo(secretsGetResponse);
+        // Assert
+        result.Should().NotBeNull();
+        result.Result.Should().BeOfType<OkObjectResult>();
+        ((AdapterResponseModel<IEnumerable<SecretResponse>>)((OkObjectResult)result.Result!).Value!).Should().BeEquivalentTo(secretsGetResponse);
 
-//        _adapter.Verify(x => x.Setup(keyVaultName, tenantId, clientId, clientSecret), Times.Once);
-//        _adapter.Verify(x => x.GetDeletedSecrets(default), Times.Once);
-//    }
+        _clientService.Verify(x => x.SendAndReceiveMessageAsync("GetSecretsRequest", It.IsAny<string>(), default), Times.Once);
+    }
 
-//    [Test]
-//    public async Task DeleteAsync_Works_well()
-//    {
-//        // Arrange
-//        var keyVaultName = "KeyVaultName1";
-//        var tenantId = "tenantId1";
-//        var clientId = "clientId1";
-//        var clientSecret = "clientSecret1";
-//        var secretFilter = "SecretFilter";
-//        var request = TestSampleData.GetRequest(keyVaultName, secretFilter, tenantId, clientId, clientSecret);
+    [Test]
+    public void GetDeletedAsync_Works_well()
+    {
+        // Arrange
+        var keyVaultName = "KeyVaultName1";
+        var tenantId = "tenantId1";
+        var clientId = "clientId1";
+        var clientSecret = "clientSecret1";
+        var secretFilter = "DeletedSecretFilter";
+        var request = TestSampleData.GetRequest(keyVaultName, secretFilter, tenantId, clientId, clientSecret);
 
-//        var secretsEntity1 = TestSampleData.GetSecretsEntity();
-//        var secretsEntity2 = TestSampleData.GetEmptySecretsEntity();
-//        var secretsGetResponse = TestSampleData.GetEmptySecretsGetResponse();
+        var secretResponse = new BaseResponse<AdapterResponseModel<IEnumerable<Dictionary<string, object>>>>()
+        {
+            Data = new AdapterResponseModel<IEnumerable<Dictionary<string, object>>>
+            {
+                Data = new List<Dictionary<string, object>>()
+                {
+                    new()
+                    {
+                        { "Name", "DeletedSecretFilter123" },
+                        { "DeletedOn", "2021-10-01T00:00:00Z" }
+                    },
+                    new()
+                    {
+                        { "Name", "DeletedSecretFilter456" },
+                        { "DeletedOn", "2022-10-01T00:00:00Z" }
+                    }
+                },
+                Status = AdapterStatus.Success
+            }
+        };
 
-//        _adapter.SetupSequence(x => x.GetSecretsAsync(It.IsAny<CancellationToken>()))
-//            .ReturnsAsync(secretsEntity1)
-//            .ReturnsAsync(secretsEntity2);
+        _clientService.Setup(x => x.SendAndReceiveMessageAsync("GetDeletedSecretsRequest", It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((true, JsonSerializer.Serialize(secretResponse)));
 
-//        _adapter.Setup(x => x.DeleteSecretAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(AdapterStatus.Success);
-//        _adapter.Setup(x => x.Setup(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()));
+        // Act
+        var result = _controller.GetDeletedAsync(request, default);
 
-//        _secretRepository.Setup(x => x.AddEntityAsync(It.IsAny<SecretChangeEntity>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+        // Assert
+        result.Should().NotBeNull();
+        result.Result.Should().BeOfType<ActionResult<AdapterResponseModel<IEnumerable<DeletedSecretResponse>>>>();
+        _clientService.Verify(x => x.SendAndReceiveMessageAsync("GetDeletedSecretsRequest", It.IsAny<string>(), default), Times.Once);
+    }
 
-//        // Act
-//        var result = await _controller.DeleteAsync(request, default);
+    [Test]
+    public async Task DeleteAsync_Works_well()
+    {
+        // Arrange
+        var keyVaultName = "KeyVaultName1";
+        var tenantId = "tenantId1";
+        var clientId = "clientId1";
+        var clientSecret = "clientSecret1";
+        var secretFilter = "Secret";
+        var request = TestSampleData.GetRequest(keyVaultName, secretFilter, tenantId, clientId, clientSecret);
 
-//        // Assert
-//        result.Should().NotBeNull();
-//        result.Result.Should().BeOfType<OkObjectResult>();
-//        ((AdapterResponseModel<IEnumerable<SecretResponse>>)((OkObjectResult)result.Result!).Value!).Should().BeEquivalentTo(secretsGetResponse);
+        var deletionStatus = new BaseResponse<AdapterStatus>()
+        {
+            Data = AdapterStatus.Success
+        };
 
-//        _adapter.Verify(x => x.Setup(keyVaultName, tenantId, clientId, clientSecret), Times.Once);
-//        _adapter.Verify(x => x.GetSecretsAsync(default), Times.Exactly(2));
-//        _adapter.Verify(x => x.DeleteSecretAsync(It.IsAny<string>(), default), Times.Exactly(3));
-//        _secretRepository.Verify(x => x.AddEntityAsync(It.IsAny<SecretChangeEntity>(), default), Times.Once);
-//    }
+        var secretsGetResponse = TestSampleData.GetEmptySecretsGetResponse();
 
-//    [Test]
-//    public async Task DeleteInlineAsync_Works_well()
-//    {
-//        // Arrange
-//        var keyVaultName = "KeyVaultName1";
-//        var tenantId = "tenantId1";
-//        var clientId = "clientId1";
-//        var clientSecret = "clientSecret1";
-//        var secretFilter = "SecretFilter";
-//        var request = TestSampleData.GetRequest(keyVaultName, secretFilter, tenantId, clientId, clientSecret);
-//        var status = AdapterStatus.Success;
+        var secretResponse1 = new BaseResponse<AdapterResponseModel<IEnumerable<AdapterResponseModel<SimplifiedSecretResponse?>>>>()
+        {
+            Data = new AdapterResponseModel<IEnumerable<AdapterResponseModel<SimplifiedSecretResponse?>>>
+            {
+                Data = new List<AdapterResponseModel<SimplifiedSecretResponse?>>
+                {
+                    new()
+                    {
+                        Data = new SimplifiedSecretResponse
+                        {
+                            SecretName = "SecretFilter123",
+                            SecretValue = "3Kpu6gF214vAqHlzaX5G"
+                        }
+                    },
+                    new()
+                    {
+                        Data = new SimplifiedSecretResponse
+                        {
+                            SecretName = "SecretFilter456",
+                            SecretValue = "KCRQJ08PdFHU9Ly2pUI2"
+                        }
+                    },
+                    new()
+                    {
+                        Data = new SimplifiedSecretResponse
+                        {
+                            SecretName = "SecretFilter789",
+                            SecretValue = "ggl1oBLSiYNBliNQhsGW"
+                        }
+                    }
+                },
+                Status = AdapterStatus.Success
+            }
+        };
 
-//        var secretsEntity1 = TestSampleData.GetSecretsEntity();
-//        var secretsEntity2 = TestSampleData.GetEmptySecretsEntity();
+        var secretResponse2 = new BaseResponse<AdapterResponseModel<IEnumerable<AdapterResponseModel<SimplifiedSecretResponse?>>>>()
+        {
+            Data = new AdapterResponseModel<IEnumerable<AdapterResponseModel<SimplifiedSecretResponse?>>>
+            {
+                Data = Enumerable.Empty<AdapterResponseModel<SimplifiedSecretResponse?>>(),
+                Status = AdapterStatus.Success
+            }
+        };
 
-//        _adapter.SetupSequence(x => x.GetSecretsAsync(It.IsAny<CancellationToken>()))
-//            .ReturnsAsync(secretsEntity1)
-//            .ReturnsAsync(secretsEntity2);
+        _clientService.SetupSequence(x => x.SendAndReceiveMessageAsync("GetSecretsRequest", It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((true, JsonSerializer.Serialize(secretResponse1)))
+            .ReturnsAsync((true, JsonSerializer.Serialize(secretResponse2)));
 
-//        _adapter.Setup(x => x.DeleteSecretAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(AdapterStatus.Success);
-//        _adapter.Setup(x => x.Setup(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()));
-//        _secretRepository.Setup(x => x.AddEntityAsync(It.IsAny<SecretChangeEntity>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+        _clientService.Setup(x => x.SendAndReceiveMessageAsync("DeleteSecretRequest", It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((true, JsonSerializer.Serialize(deletionStatus)));
 
-//        // Act
-//        var result = await _controller.DeleteInlineAsync(request, default);
+        // Act
+        var result = await _controller.DeleteAsync(request, default);
 
-//        // Assert
-//        result.Should().NotBeNull();
-//        result.Result.Should().BeOfType<OkObjectResult>();
-//        ((AdapterStatus)((OkObjectResult)result.Result!).Value!).Should().Be(status);
+        // Assert
+        result.Should().NotBeNull();
+        result.Result.Should().BeOfType<OkObjectResult>();
+        ((AdapterResponseModel<IEnumerable<SecretResponse>>)((OkObjectResult)result.Result!).Value!).Should().BeEquivalentTo(secretsGetResponse);
 
-//        _adapter.Verify(x => x.Setup(keyVaultName, tenantId, clientId, clientSecret), Times.Once);
-//        _adapter.Verify(x => x.GetSecretsAsync(default), Times.Once);
-//        _adapter.Verify(x => x.DeleteSecretAsync(It.IsAny<string>(), default), Times.Exactly(3));
-//        _secretRepository.Verify(x => x.AddEntityAsync(It.IsAny<SecretChangeEntity>(), default), Times.Once);
-//    }
+        _clientService.Verify(x => x.SendAndReceiveMessageAsync("GetSecretsRequest", It.IsAny<string>(), default), Times.Exactly(2));
+        _clientService.Verify(x => x.SendAndReceiveMessageAsync("DeleteSecretRequest", It.IsAny<string>(), default), Times.Exactly(3));
+    }
 
-//    [Test]
-//    public void RecoverAsync_Works_well()
-//    {
-//        // Arrange
-//        var keyVaultName = "KeyVaultName1";
-//        var tenantId = "tenantId1";
-//        var clientId = "clientId1";
-//        var clientSecret = "clientSecret1";
-//        var secretFilter = "DeletedSecretFilter";
-//        var request = TestSampleData.GetRequest(keyVaultName, secretFilter, tenantId, clientId, clientSecret);
+    [Test]
+    public async Task DeleteInlineAsync_Works_well()
+    {
+        // Arrange
+        var keyVaultName = "KeyVaultName1";
+        var tenantId = "tenantId1";
+        var clientId = "clientId1";
+        var clientSecret = "clientSecret1";
+        var secretFilter = "Secret";
+        var request = TestSampleData.GetRequest(keyVaultName, secretFilter, tenantId, clientId, clientSecret);
 
-//        var secretsEntity = TestSampleData.GetEmptyDeletedSecretsEntity();
-//        var secretsGetResponse = TestSampleData.GetEmptySecretsGetResponse1();
+        var deletionStatus = new BaseResponse<AdapterStatus>()
+        {
+            Data = AdapterStatus.Success
+        };
 
-//        _adapter.SetupSequence(x => x.GetDeletedSecrets(It.IsAny<CancellationToken>()))
-//            .Returns(secretsEntity)
-//            .Returns(secretsEntity);
-//        _adapter.Setup(x => x.Setup(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()));
-//        _secretRepository.Setup(x => x.AddEntityAsync(It.IsAny<SecretChangeEntity>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+        var secretResponse = new BaseResponse<AdapterResponseModel<IEnumerable<AdapterResponseModel<SimplifiedSecretResponse?>>>>()
+        {
+            Data = new AdapterResponseModel<IEnumerable<AdapterResponseModel<SimplifiedSecretResponse?>>>
+            {
+                Data = new List<AdapterResponseModel<SimplifiedSecretResponse?>>
+                {
+                    new()
+                    {
+                        Data = new SimplifiedSecretResponse
+                        {
+                            SecretName = "SecretFilter123",
+                            SecretValue = "3Kpu6gF214vAqHlzaX5G"
+                        }
+                    },
+                    new()
+                    {
+                        Data = new SimplifiedSecretResponse
+                        {
+                            SecretName = "SecretFilter456",
+                            SecretValue = "KCRQJ08PdFHU9Ly2pUI2"
+                        }
+                    },
+                    new()
+                    {
+                        Data = new SimplifiedSecretResponse
+                        {
+                            SecretName = "SecretFilter789",
+                            SecretValue = "ggl1oBLSiYNBliNQhsGW"
+                        }
+                    }
+                },
+                Status = AdapterStatus.Success
+            }
+        };
 
-//        // Act
-//        var result = _controller.RecoverAsync(request, default);
+        _clientService.Setup(x => x.SendAndReceiveMessageAsync("GetSecretsRequest", It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((true, JsonSerializer.Serialize(secretResponse)));
 
-//        // Assert
-//        result.Should().NotBeNull();
-//        result.Result.Result.Should().BeOfType<OkObjectResult>();
-//        ((AdapterResponseModel<IEnumerable<DeletedSecretResponse>>)((OkObjectResult)result.Result!.Result!).Value!).Should().BeEquivalentTo(secretsGetResponse);
+        _clientService.Setup(x => x.SendAndReceiveMessageAsync("DeleteSecretRequest", It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((true, JsonSerializer.Serialize(deletionStatus)));
 
-//        _adapter.Verify(x => x.Setup(keyVaultName, tenantId, clientId, clientSecret), Times.Once);
-//        _adapter.Verify(x => x.GetDeletedSecrets(default), Times.Exactly(2));
-//        _secretRepository.Verify(x => x.AddEntityAsync(It.IsAny<SecretChangeEntity>(), default), Times.Once);
-//    }
+        // Act
+        var result = await _controller.DeleteInlineAsync(request, default);
 
-//    [Test]
-//    public void RecoverInlineAsync_Works_well()
-//    {
-//        // Arrange
-//        var keyVaultName = "KeyVaultName1";
-//        var tenantId = "tenantId1";
-//        var clientId = "clientId1";
-//        var clientSecret = "clientSecret1";
-//        var secretFilter = "DeletedSecretFilter";
-//        var request = TestSampleData.GetRequest(keyVaultName, secretFilter, tenantId, clientId, clientSecret);
-//        var secretsEntity = TestSampleData.GetEmptyDeletedSecretsEntity();
+        // Assert
+        result.Should().NotBeNull();
+        result.Result.Should().BeOfType<OkObjectResult>();
 
-//        _adapter.SetupSequence(x => x.GetDeletedSecrets(It.IsAny<CancellationToken>()))
-//            .Returns(secretsEntity);
-//        _adapter.Setup(x => x.Setup(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()));
-//        _secretRepository.Setup(x => x.AddEntityAsync(It.IsAny<SecretChangeEntity>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+        _clientService.Verify(x => x.SendAndReceiveMessageAsync("GetSecretsRequest", It.IsAny<string>(), default), Times.Once);
+        _clientService.Verify(x => x.SendAndReceiveMessageAsync("DeleteSecretRequest", It.IsAny<string>(), default), Times.Exactly(3));
+    }
 
-//        // Act
-//        var result = _controller.RecoverInlineAsync(request, default);
+    [Test]
+    public void RecoverAsync_Works_well()
+    {
+        // Arrange
+        var keyVaultName = "KeyVaultName1";
+        var tenantId = "tenantId1";
+        var clientId = "clientId1";
+        var clientSecret = "clientSecret1";
+        var secretFilter = "DeletedSecretFilter";
+        var request = TestSampleData.GetRequest(keyVaultName, secretFilter, tenantId, clientId, clientSecret);
 
-//        // Assert
-//        result.Should().NotBeNull();
-//        result.Result.Result.Should().BeOfType<OkObjectResult>();
-//        ((AdapterStatus)((OkObjectResult)result.Result!.Result!).Value!).Should().Be(AdapterStatus.Success);
+        var secretsGetResponse = TestSampleData.GetEmptySecretsGetResponse1();
 
-//        _adapter.Verify(x => x.Setup(keyVaultName, tenantId, clientId, clientSecret), Times.Once);
-//        _adapter.Verify(x => x.GetDeletedSecrets(default), Times.Once);
-//        _secretRepository.Verify(x => x.AddEntityAsync(It.IsAny<SecretChangeEntity>(), default), Times.Once);
-//    }
+        var recoverStatus = new BaseResponse<AdapterStatus>()
+        {
+            Data = AdapterStatus.Success
+        };
 
-//    [Test]
-//    public async Task CopyAsync_Works_well()
-//    {
-//        // Arrange
-//        var fromKeyVault = "KeyVaultName1";
-//        var tenantId = "tenantId1";
-//        var clientId = "clientId1";
-//        var clientSecret = "clientSecret1";
-//        var ToKeyVault = "ToKeyVault";
-//        var request = TestSampleData.GetRequest(fromKeyVault, ToKeyVault, tenantId, clientId, clientSecret, true);
+        var deletedSecretResponse1 = new BaseResponse<AdapterResponseModel<IEnumerable<Dictionary<string, object>>>>()
+        {
+            Data = new AdapterResponseModel<IEnumerable<Dictionary<string, object>>>
+            {
+                Data = new List<Dictionary<string, object>>()
+                {
+                    new()
+                    {
+                        { "Name", "DeletedSecretFilter123" },
+                        { "DeletedOn", "2021-10-01T00:00:00Z" }
+                    },
+                    new()
+                    {
+                        { "Name", "DeletedSecretFilter456" },
+                        { "DeletedOn", "2022-10-01T00:00:00Z" }
+                    }
+                },
+                Status = AdapterStatus.Success
+            }
+        };
 
-//        _adapter.Setup(x => x.Setup(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()));
+        var deletedSecretResponse2 = new BaseResponse<AdapterResponseModel<IEnumerable<Dictionary<string, object>>>>()
+        {
+            Data = new AdapterResponseModel<IEnumerable<Dictionary<string, object>>>
+            {
+                Data = Enumerable.Empty<Dictionary<string, object>>(),
+                Status = AdapterStatus.Success
+            }
+        };
 
-//        _adapter.Setup(x => x.GetAllAsync(It.IsAny<CancellationToken>())).ReturnsAsync(Enumerable.Empty<KeyVaultSecret>);
+        _clientService.SetupSequence(
+                x => x.SendAndReceiveMessageAsync("GetDeletedSecretsRequest", It.IsAny<string>(), It.IsAny<CancellationToken>())
+            )
+            .ReturnsAsync((true, JsonSerializer.Serialize(deletedSecretResponse1)))
+            .ReturnsAsync((true, JsonSerializer.Serialize(deletedSecretResponse2)));
 
-//        _keyVaultRepository.Setup(
-//            x => x.AddEntityAsync(It.IsAny<KeyVaultCopyEntity>(), It.IsAny<CancellationToken>())
-//            ).Returns(Task.CompletedTask);
+        _clientService.Setup(x => x.SendAndReceiveMessageAsync("RecoverSecretRequest", It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((true, JsonSerializer.Serialize(recoverStatus)));
 
-//        // Act
-//        var result = await _controller.CopyAsync(request, default);
+        // Act
+        var result = _controller.RecoverAsync(request, default);
 
-//        // Assert
-//        result.Should().NotBeNull();
-//        result.Result.Should().BeOfType<OkObjectResult>();
-//        ((AdapterStatus)((OkObjectResult)result.Result!).Value!).Should().Be(AdapterStatus.Success);
+        // Assert
+        result.Should().NotBeNull();
+        result.Result.Result.Should().BeOfType<OkObjectResult>();
+        ((AdapterResponseModel<IEnumerable<DeletedSecretResponse>>)((OkObjectResult)result.Result!.Result!).Value!)
+            .Should()
+            .BeEquivalentTo(secretsGetResponse);
 
-//        _keyVaultRepository.Verify(x => x.AddEntityAsync(It.IsAny<KeyVaultCopyEntity>(), default), Times.Once);
-//        _adapter.Verify(x => x.Setup(fromKeyVault, tenantId, clientId, clientSecret), Times.Once);
-//        _adapter.Verify(x => x.Setup(ToKeyVault, tenantId, clientId, clientSecret), Times.Once);
-//        _adapter.Verify(x => x.GetAllAsync(default), Times.Exactly(2));
+        _clientService.Verify(x => x.SendAndReceiveMessageAsync("GetDeletedSecretsRequest", It.IsAny<string>(), default), Times.Exactly(2));
+        _clientService.Verify(x => x.SendAndReceiveMessageAsync("RecoverSecretRequest", It.IsAny<string>(), default), Times.Exactly(2));
+    }
 
-//    }
-//}
+    [Test]
+    public void RecoverInlineAsync_Works_well()
+    {
+        // Arrange
+        var keyVaultName = "KeyVaultName1";
+        var tenantId = "tenantId1";
+        var clientId = "clientId1";
+        var clientSecret = "clientSecret1";
+        var secretFilter = "DeletedSecretFilter";
+        var request = TestSampleData.GetRequest(keyVaultName, secretFilter, tenantId, clientId, clientSecret);
+
+        var recoverStatus = new BaseResponse<AdapterStatus>()
+        {
+            Data = AdapterStatus.Success
+        };
+
+        var deletedSecretResponse = new BaseResponse<AdapterResponseModel<IEnumerable<Dictionary<string, object>>>>()
+        {
+            Data = new AdapterResponseModel<IEnumerable<Dictionary<string, object>>>
+            {
+                Data = new List<Dictionary<string, object>>()
+                {
+                    new()
+                    {
+                        { "Name", "DeletedSecretFilter123" },
+                        { "DeletedOn", "2021-10-01T00:00:00Z" }
+                    },
+                    new()
+                    {
+                        { "Name", "DeletedSecretFilter456" },
+                        { "DeletedOn", "2022-10-01T00:00:00Z" }
+                    }
+                },
+                Status = AdapterStatus.Success
+            }
+        };
+
+        _clientService.SetupSequence(
+                x => x.SendAndReceiveMessageAsync("GetDeletedSecretsRequest", It.IsAny<string>(), It.IsAny<CancellationToken>())
+            )
+            .ReturnsAsync((true, JsonSerializer.Serialize(deletedSecretResponse)));
+
+        _clientService.Setup(x => x.SendAndReceiveMessageAsync("RecoverSecretRequest", It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((true, JsonSerializer.Serialize(recoverStatus)));
+
+        // Act
+        var result = _controller.RecoverInlineAsync(request, default);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Result.Result.Should().BeOfType<OkObjectResult>();
+        ((AdapterStatus)((OkObjectResult)result.Result!.Result!).Value!).Should().Be(AdapterStatus.Success);
+
+        _clientService.Verify(x => x.SendAndReceiveMessageAsync("GetDeletedSecretsRequest", It.IsAny<string>(), default), Times.Once);
+        _clientService.Verify(x => x.SendAndReceiveMessageAsync("RecoverSecretRequest", It.IsAny<string>(), default), Times.Exactly(2));
+    }
+
+    [Test]
+    public async Task CopyAsync_Works_well()
+    {
+        // Arrange
+        var fromKeyVault = "KeyVaultName1";
+        var tenantId = "tenantId1";
+        var clientId = "clientId1";
+        var clientSecret = "clientSecret1";
+        var ToKeyVault = "ToKeyVault";
+        var request = TestSampleData.GetRequest(fromKeyVault, ToKeyVault, tenantId, clientId, clientSecret, true);
+
+        var secretResponse1 = new BaseResponse<AdapterResponseModel<IEnumerable<KeyVaultSecret>>>()
+        {
+            Data = new AdapterResponseModel<IEnumerable<KeyVaultSecret>>
+            {
+                Data = new List<KeyVaultSecret>
+                {
+                    new("SecretFilter123", "3Kpu6gF214vAqHlzaX5G"),
+                    new("SecretFilter456", "KCRQJ08PdFHU9Ly2pUI2"),
+                    new("SecretFilter789", "ggl1oBLSiYNBliNQhsGW")
+                },
+                Status = AdapterStatus.Success
+            }
+        };
+
+        var secretResponse2 = new BaseResponse<AdapterResponseModel<IEnumerable<KeyVaultSecret>>>()
+        {
+            Data = new AdapterResponseModel<IEnumerable<KeyVaultSecret>>
+            {
+                Data = Enumerable.Empty<KeyVaultSecret>(),
+                Status = AdapterStatus.Success
+            }
+        };
+
+        var addStatus = new BaseResponse<AdapterStatus>()
+        {
+            Data = AdapterStatus.Success
+        };
+
+        _clientService.SetupSequence(
+                x => x.SendAndReceiveMessageAsync("GetAllSecretsRequest", It.IsAny<string>(), It.IsAny<CancellationToken>())
+            )
+            .ReturnsAsync((true, JsonSerializer.Serialize(secretResponse1)))
+            .ReturnsAsync((true, JsonSerializer.Serialize(secretResponse2)));
+
+        _clientService.Setup(x => x.SendAndReceiveMessageAsync("AddKeyVaultSecretRequest", It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((true, JsonSerializer.Serialize(addStatus)));
+
+        // Act
+        var result = await _controller.CopyAsync(request, default);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Result.Should().BeOfType<OkObjectResult>();
+        ((AdapterStatus)((OkObjectResult)result.Result!).Value!).Should().Be(AdapterStatus.Success);
+
+        _clientService.Verify(x => x.SendAndReceiveMessageAsync("GetAllSecretsRequest", It.IsAny<string>(), default), Times.Exactly(2));
+        _clientService.Verify(x => x.SendAndReceiveMessageAsync("AddKeyVaultSecretRequest", It.IsAny<string>(), default), Times.Exactly(3));
+    }
+
+    [TearDown]
+    public async Task TearDown()
+    {
+        DbContextTestBase.TearDownDatabaseContext(_operationsDbContext);
+        await _operationsDbContext.DisposeAsync();
+    }
+}
