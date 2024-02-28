@@ -428,21 +428,6 @@ public class KeyVaultService(
         return relevantSecrets;
     }
 
-    private IEnumerable<DeletedSecret> Filter(IEnumerable<DeletedSecret> keyVaultSecrets, string filter)
-    {
-        Regex regex;
-        try
-        {
-            regex = new Regex(filter.ToLower(), RegexOptions.None, TimeSpan.FromMilliseconds(5));
-        }
-        catch (RegexParseException ex)
-        {
-            logger.LogError(ex, "Couldn't parse and create regex. Value: {value}.", filter);
-            return Enumerable.Empty<DeletedSecret>();
-        }
-        return keyVaultSecrets.Where(secret => regex.IsMatch(secret?.Name.ToLower() ?? string.Empty)).ToList();
-    }
-
     private static Dictionary<string, string> ParametersBuilder(
         KeyVaultSecret keyVaultSecret,
         IEnumerable<KeyVaultSecret> toKeyVaultSecrets,

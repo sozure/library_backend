@@ -2,6 +2,7 @@ using CorrelationId.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Infrastructure;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using VGManager.Adapter.Client.Extensions;
 using VGManager.Library.Api;
@@ -17,8 +18,10 @@ using VGManager.Library.Services.Interfaces;
 using VGManager.Library.Services.Settings;
 using ServiceProfiles = VGManager.Library.Services.MapperProfiles;
 
+[ExcludeFromCodeCoverage]
 static partial class Program
 {
+    static readonly string[] Tags = ["startup"];
     public static WebApplicationBuilder ConfigureServices(WebApplicationBuilder self, string specificOrigins)
     {
         var configuration = self.Configuration;
@@ -54,7 +57,7 @@ static partial class Program
         services.AddAuthorization();
         services.AddControllers();
         services.AddHealthChecks()
-            .AddCheck<StartupHealthCheck>(nameof(StartupHealthCheck), tags: new[] { "startup" });
+            .AddCheck<StartupHealthCheck>(nameof(StartupHealthCheck), tags: Tags);
 
         services.AddAutoMapper(
             typeof(Program),
