@@ -28,7 +28,8 @@ public class KeyVaultService(
         )
     {
         var request = GetBaseSecretRequest(secretModel);
-        (var isSuccess, var response) = await adapterCommunicator.CommunicateWithAdapterAsync(request, CommandTypes.GetKeyVaultsRequest, cancellationToken);
+        (var isSuccess, var response) = await adapterCommunicator
+            .CommunicateWithAdapterAsync(request, CommandTypes.GetKeyVaultsRequest, cancellationToken);
 
         if (!isSuccess)
         {
@@ -80,7 +81,7 @@ public class KeyVaultService(
 
         if (!isSuccess)
         {
-            return new AdapterResponseModel<IEnumerable<SecretResult>>() { Data = Enumerable.Empty<SecretResult>() };
+            return new AdapterResponseModel<IEnumerable<SecretResult>> { Data = Enumerable.Empty<SecretResult>(), Status = AdapterStatus.Unknown };
         }
 
         var result = JsonSerializer
@@ -88,12 +89,12 @@ public class KeyVaultService(
 
         if (result is null)
         {
-            return new AdapterResponseModel<IEnumerable<SecretResult>>() { Data = Enumerable.Empty<SecretResult>() };
+            return new AdapterResponseModel<IEnumerable<SecretResult>> { Data = Enumerable.Empty<SecretResult>(), Status = AdapterStatus.Unknown };
         }
 
         if (result.Status != AdapterStatus.Success)
         {
-            return new AdapterResponseModel<IEnumerable<SecretResult>>() { Data = Enumerable.Empty<SecretResult>() };
+            return new AdapterResponseModel<IEnumerable<SecretResult>> { Data = Enumerable.Empty<SecretResult>(), Status = result.Status };
         }
 
         var secrets = CollectSecrets(result);
