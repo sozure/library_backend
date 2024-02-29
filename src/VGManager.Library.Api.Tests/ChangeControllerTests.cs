@@ -67,8 +67,198 @@ public class ChangeControllerTests
 
         var response = new RepositoryResponseModel<VGOperationModel>()
         {
-            Data = new List<VGOperationModel>
-            {
+            Data = GetVGOperations(),
+            Status = RepositoryStatus.Success
+        };
+
+        // Act
+        var result = await _controller.GetVariableChangesAsync(request, default);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Result.Should().BeOfType<OkObjectResult>();
+        ((RepositoryResponseModel<VGOperationModel>)((OkObjectResult)result.Result!).Value!).Should().BeEquivalentTo(response);
+    }
+
+    [Test]
+    public async Task GetVariableChangesAsync_Works_well_2()
+    {
+        // Arrange
+        var request = new VGChangesRequest
+        {
+            ChangeTypes = new List<ChangeType> { ChangeType.Add, ChangeType.Delete, ChangeType.Update },
+            From = new DateTime(2024, 2, 27, 10, 0, 0, DateTimeKind.Utc),
+            To = new DateTime(2024, 2, 29, 10, 0, 0, DateTimeKind.Utc),
+            Limit = 10,
+            Organization = "VGManager",
+            Project = "VGManager.Library.Api"
+        };
+
+        var response = new RepositoryResponseModel<VGOperationModel>()
+        {
+            Data = GetVGOperations(),
+            Status = RepositoryStatus.Success
+        };
+
+        // Act
+        var result = await _controller.GetVariableChangesAsync(request, default);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Result.Should().BeOfType<OkObjectResult>();
+        ((RepositoryResponseModel<VGOperationModel>)((OkObjectResult)result.Result!).Value!).Should().BeEquivalentTo(response);
+    }
+
+    [Test]
+    public async Task GetSecretChangesAsync_Works_well()
+    {
+        // Arrange
+        var request = new SecretChangesRequest
+        {
+            From = new DateTime(2024, 2, 27, 10, 0, 0, DateTimeKind.Utc),
+            To = new DateTime(2024, 2, 29, 10, 0, 0, DateTimeKind.Utc),
+            User = "TestUser",
+            Limit = 10,
+            KeyVaultName = "TestKeyVault"
+        };
+
+        var response = new RepositoryResponseModel<SecretOperationModel>()
+        {
+            Data = GetSecretOperations(),
+            Status = RepositoryStatus.Success
+        };
+
+        // Act
+        var result = await _controller.GetSecretChangesAsync(request, default);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Result.Should().BeOfType<OkObjectResult>();
+        ((RepositoryResponseModel<SecretOperationModel>)((OkObjectResult)result.Result!).Value!).Should().BeEquivalentTo(response);
+    }
+
+    [Test]
+    public async Task GetSecretChangesAsync_Works_well_2()
+    {
+        // Arrange
+        var request = new SecretChangesRequest
+        {
+            From = new DateTime(2024, 2, 27, 10, 0, 0, DateTimeKind.Utc),
+            To = new DateTime(2024, 2, 29, 10, 0, 0, DateTimeKind.Utc),
+            Limit = 10,
+            KeyVaultName = "TestKeyVault"
+        };
+
+        var response = new RepositoryResponseModel<SecretOperationModel>()
+        {
+            Data = GetSecretOperations(),
+            Status = RepositoryStatus.Success
+        };
+
+        // Act
+        var result = await _controller.GetSecretChangesAsync(request, default);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Result.Should().BeOfType<OkObjectResult>();
+        ((RepositoryResponseModel<SecretOperationModel>)((OkObjectResult)result.Result!).Value!).Should().BeEquivalentTo(response);
+    }
+    
+    [Test]
+    public async Task GetKVChangesAsync_Works_well()
+    {
+        // Arrange
+        var request = new KVChangesRequest
+        {
+            From = new DateTime(2024, 2, 27, 10, 0, 0, DateTimeKind.Utc),
+            To = new DateTime(2024, 2, 29, 10, 0, 0, DateTimeKind.Utc),
+            User = "TestUser",
+            Limit = 10,
+        };
+
+        var response = new RepositoryResponseModel<KVOperationModel>()
+        {
+            Data = GetKVCopyOperations(),
+            Status = RepositoryStatus.Success
+        };
+
+        // Act
+        var result = await _controller.GetKVChangesAsync(request, default);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Result.Should().BeOfType<OkObjectResult>();
+        ((RepositoryResponseModel<KVOperationModel>)((OkObjectResult)result.Result!).Value!).Should().BeEquivalentTo(response);
+    }
+
+    [Test]
+    public async Task GetKVChangesAsync_Works_well_2()
+    {
+        // Arrange
+        var request = new KVChangesRequest
+        {
+            From = new DateTime(2024, 2, 27, 10, 0, 0, DateTimeKind.Utc),
+            To = new DateTime(2024, 2, 29, 10, 0, 0, DateTimeKind.Utc),
+            Limit = 10,
+        };
+
+        var response = new RepositoryResponseModel<KVOperationModel>()
+        {
+            Data = GetKVCopyOperations(),
+            Status = RepositoryStatus.Success
+        };
+
+        // Act
+        var result = await _controller.GetKVChangesAsync(request, default);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Result.Should().BeOfType<OkObjectResult>();
+        ((RepositoryResponseModel<KVOperationModel>)((OkObjectResult)result.Result!).Value!).Should().BeEquivalentTo(response);
+    }
+
+    [TearDown]
+    public async Task TearDown()
+    {
+        DbContextTestBase.TearDownDatabaseContext(_operationsDbContext);
+        await _operationsDbContext.DisposeAsync();
+    }
+
+    private static List<KVOperationModel> GetKVCopyOperations()
+    {
+        return
+            [
+                new()
+                {
+                    Id = "xyz",
+                    DestinationKeyVault = "TestKeyVault1",
+                    OriginalKeyVault = "TestKeyVault2",
+                    Date = new DateTime(2024, 2, 28, 14, 0, 0, DateTimeKind.Utc),
+                    User = "TestUser"
+                }
+            ];
+    }
+
+    private static List<SecretOperationModel> GetSecretOperations()
+    {
+        return
+            [
+                new()
+                {
+                    Id = "xyz",
+                    Date = new DateTime(2024, 2, 28, 13, 0, 0, DateTimeKind.Utc),
+                    User = "TestUser",
+                    ChangeType = SecretChangeType.Delete,
+                    KeyVaultName = "TestKeyVault",
+                    SecretNameRegex = "TestSecret"
+                }
+            ];
+    }
+
+    private static List<VGOperationModel> GetVGOperations()
+    {
+        return
+            [
                 new()
                 {
                     Id = "xyz",
@@ -102,99 +292,6 @@ public class ChangeControllerTests
                     VariableGroupFilter = "VGManager.Library.Api",
                     Type = "Delete"
                 }
-            },
-            Status = RepositoryStatus.Success
-        };
-
-        // Act
-        var result = await _controller.GetVariableChangesAsync(request, default);
-
-        // Assert
-        result.Should().NotBeNull();
-        result.Result.Should().BeOfType<OkObjectResult>();
-        ((RepositoryResponseModel<VGOperationModel>)((OkObjectResult)result.Result!).Value!).Should().BeEquivalentTo(response);
-    }
-
-    [Test]
-    public async Task GetSecretChangesAsync_Works_well()
-    {
-        // Arrange
-        var request = new SecretChangesRequest
-        {
-            From = new DateTime(2024, 2, 27, 10, 0, 0, DateTimeKind.Utc),
-            To = new DateTime(2024, 2, 29, 10, 0, 0, DateTimeKind.Utc),
-            User = "TestUser",
-            Limit = 10,
-            KeyVaultName = "TestKeyVault"
-        };
-
-        var response = new RepositoryResponseModel<SecretOperationModel>()
-        {
-            Data = new List<SecretOperationModel>
-            {
-                new()
-                {
-                    Id = "xyz",
-                    Date = new DateTime(2024, 2, 28, 13, 0, 0, DateTimeKind.Utc),
-                    User = "TestUser",
-                    ChangeType = SecretChangeType.Delete,
-                    KeyVaultName = "TestKeyVault",
-                    SecretNameRegex = "TestSecret"
-                }
-            },
-            Status = RepositoryStatus.Success
-        };
-
-        // Act
-        var result = await _controller.GetSecretChangesAsync(request, default);
-
-        // Assert
-        result.Should().NotBeNull();
-        result.Result.Should().BeOfType<OkObjectResult>();
-        ((RepositoryResponseModel<SecretOperationModel>)((OkObjectResult)result.Result!).Value!).Should().BeEquivalentTo(response);
-    }
-
-    [Test]
-    public async Task GetKVChangesAsync_Works_well()
-    {
-        // Arrange
-        var request = new KVChangesRequest
-        {
-            From = new DateTime(2024, 2, 27, 10, 0, 0, DateTimeKind.Utc),
-            To = new DateTime(2024, 2, 29, 10, 0, 0, DateTimeKind.Utc),
-            User = "TestUser",
-            Limit = 10,
-        };
-
-        var response = new RepositoryResponseModel<KVOperationModel>()
-        {
-            Data = new List<KVOperationModel>
-            {
-                new()
-                {
-                    Id = "xyz",
-                    DestinationKeyVault = "TestKeyVault1",
-                    OriginalKeyVault = "TestKeyVault2",
-                    Date = new DateTime(2024, 2, 28, 14, 0, 0, DateTimeKind.Utc),
-                    User = "TestUser"
-                }
-            },
-            Status = RepositoryStatus.Success
-        };
-
-        // Act
-        var result = await _controller.GetKVChangesAsync(request, default);
-
-        // Assert
-        result.Should().NotBeNull();
-        result.Result.Should().BeOfType<OkObjectResult>();
-        ((RepositoryResponseModel<KVOperationModel>)((OkObjectResult)result.Result!).Value!).Should().BeEquivalentTo(response);
-    }
-
-    [TearDown]
-    public async Task TearDown()
-    {
-        DbContextTestBase.TearDownDatabaseContext(_operationsDbContext);
-        await _operationsDbContext.DisposeAsync();
+            ];
     }
 }
