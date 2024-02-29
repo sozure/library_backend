@@ -13,12 +13,6 @@ public class VGAddColdRepository(OperationsDbContext dbContext) : SqlRepository<
         await SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<IEnumerable<VGAddEntity>> GetAllAsync(CancellationToken cancellationToken = default)
-    {
-        var result = await GetAllAsync(new AdditionSpecification(), cancellationToken);
-        return result?.ToList() ?? Enumerable.Empty<VGAddEntity>();
-    }
-
     public async Task<IEnumerable<VGAddEntity>> GetAsync(
         string organization,
         string project,
@@ -46,10 +40,6 @@ public class VGAddColdRepository(OperationsDbContext dbContext) : SqlRepository<
 
     public class AdditionSpecification : SpecificationBase<VGAddEntity>
     {
-        public AdditionSpecification() : base(additionEntity => !string.IsNullOrEmpty(additionEntity.Id))
-        {
-        }
-
         public AdditionSpecification(string organization, string project, string user, DateTime from, DateTime to) : base(
             additionEntity => additionEntity.Date >= from &&
             additionEntity.Date <= to &&

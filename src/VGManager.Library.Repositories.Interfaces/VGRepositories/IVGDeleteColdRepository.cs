@@ -6,7 +6,6 @@ namespace VGManager.Library.Repositories.Interfaces.VGRepositories;
 public interface IVGDeleteColdRepository : ISqlRepository<VGDeleteEntity>
 {
     Task AddEntityAsync(VGDeleteEntity entity, CancellationToken cancellationToken = default);
-    Task<IEnumerable<VGDeleteEntity>> GetAllAsync(CancellationToken cancellationToken = default);
     Task<IEnumerable<VGDeleteEntity>> GetAsync(
         string organization,
         string project,

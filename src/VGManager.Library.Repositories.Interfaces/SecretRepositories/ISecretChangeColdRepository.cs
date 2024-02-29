@@ -6,7 +6,6 @@ namespace VGManager.Library.Repositories.Interfaces.SecretRepositories;
 public interface ISecretChangeColdRepository : ISqlRepository<SecretChangeEntity>
 {
     Task AddEntityAsync(SecretChangeEntity entity, CancellationToken cancellationToken = default);
-    Task<IEnumerable<SecretChangeEntity>> GetAllAsync(CancellationToken cancellationToken = default);
     Task<IEnumerable<SecretChangeEntity>> GetAsync(
         DateTime from,
         DateTime to,
