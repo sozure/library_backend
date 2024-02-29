@@ -69,7 +69,7 @@ public class VariableGroupService(
         }
     }
 
-    private static IEnumerable<VariableGroup> GetVariableGroups(IEnumerable<VariableGroup> filteredVariableGroups, string keyFilter, bool containsKey)
+    private static List<VariableGroup> GetVariableGroups(IEnumerable<VariableGroup> filteredVariableGroups, string keyFilter, bool containsKey)
     {
         var result = new List<VariableGroup>();
         foreach (var variableGroup in filteredVariableGroups)
