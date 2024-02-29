@@ -84,37 +84,8 @@ public class VariableGroupControllerTests
         var pat = "WtxMFit1uz1k64u527mB";
         var project = "Project1";
         var valueFilter = "value";
-
         var variableRequest = TestSampleData.GetVariableRequest(organization, pat, project, "key", valueFilter);
-
-        var vgResponse = new BaseResponse<AdapterResponseModel<IEnumerable<SimplifiedVGResponse<string>>>>()
-        {
-            Data = new AdapterResponseModel<IEnumerable<SimplifiedVGResponse<string>>>()
-            {
-                Data = new List<SimplifiedVGResponse<string>>()
-                {
-                    new()
-                    {
-                        Name = "NeptunAdapter",
-                        Variables = new Dictionary<string, string>()
-                        {
-                            ["Key123"] = "Value123",
-                            ["Key456"] = "Value456"
-                        }
-                    },
-                    new()
-                    {
-                        Name = "NeptunApi",
-                        Variables = new Dictionary<string, string>()
-                        {
-                            ["Key789"] = "Value789"
-                        }
-                    }
-                },
-                Status = AdapterStatus.Success
-            }
-        };
-
+        var vgResponse = GetVgResponse("Value123", "Value456", "Value789");
         var variableGroupResponse = TestSampleData.GetVariableGroupGetResponses(project);
 
         _clientService.Setup(x => x.SendAndReceiveMessageAsync("GetAllVGRequest", It.IsAny<string>(), It.IsAny<CancellationToken>()))
@@ -140,38 +111,83 @@ public class VariableGroupControllerTests
         var project = "All";
         var foundProject = "Project1";
         var valueFilter = "value";
-
         var variableRequest = TestSampleData.GetVariableRequest(organization, pat, project, "key", valueFilter);
+        var projectRes = GetProjectResponse(foundProject);
+        var vgResponse = GetVgResponse("Value123", "Value456", "Value789");
+
+        var variableGroupResponse = TestSampleData.GetVariableGroupGetResponses(foundProject);
+
+        _clientService.Setup(x => x.SendAndReceiveMessageAsync("GetProjectsRequest", It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((true, JsonSerializer.Serialize(projectRes)));
+
+        _clientService.Setup(x => x.SendAndReceiveMessageAsync("GetAllVGRequest", It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((true, JsonSerializer.Serialize(vgResponse)));
+
+        // Act
+        var result = await _controller.GetAsync(variableRequest, default);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Result.Should().BeOfType<OkObjectResult>();
+        ((AdapterResponseModel<List<VariableResponse>>)((OkObjectResult)result.Result!).Value!).Should().BeEquivalentTo(variableGroupResponse);
+
+        _clientService.Verify(x => x.SendAndReceiveMessageAsync("GetAllVGRequest", It.IsAny<string>(), default), Times.Once);
+        _clientService.Verify(x => x.SendAndReceiveMessageAsync("GetProjectsRequest", It.IsAny<string>(), default), Times.Once);
+    }
+
+    [Test]
+    public async Task GetAsync_Works_well_3()
+    {
+        // Arrange
+        var organization = "Organization1";
+        var pat = "WtxMFit1uz1k64u527mB";
+        var project = "All";
+        var foundProject = "Project1";
+        var valueFilter = "value";
+
+        var variableRequest = TestSampleData.GetVariableRequest(organization, pat, project, "Key", valueFilter);
+        variableRequest.KeyIsRegex = false;
 
         var projectRes = GetProjectResponse(foundProject);
+        var vgResponse = GetVgResponse("Value123", "Value456", "Value789");
 
-        var vgResponse = new BaseResponse<AdapterResponseModel<IEnumerable<SimplifiedVGResponse<string>>>>()
+        var variableGroupResponse = new AdapterResponseModel<List<VariableResponse>>()
         {
-            Data = new AdapterResponseModel<IEnumerable<SimplifiedVGResponse<string>>>()
-            {
-                Data = new List<SimplifiedVGResponse<string>>()
-                {
-                    new()
-                    {
-                        Name = "NeptunAdapter",
-                        Variables = new Dictionary<string, string>()
-                        {
-                            ["Key123"] = "Value123",
-                            ["Key456"] = "Value456"
-                        }
-                    },
-                    new()
-                    {
-                        Name = "NeptunApi",
-                        Variables = new Dictionary<string, string>()
-                        {
-                            ["Key789"] = "Value789"
-                        }
-                    }
-                },
-                Status = AdapterStatus.Success
-            }
+            Data = new List<VariableResponse>(),
+            Status = AdapterStatus.Success
         };
+
+        _clientService.Setup(x => x.SendAndReceiveMessageAsync("GetProjectsRequest", It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((true, JsonSerializer.Serialize(projectRes)));
+
+        _clientService.Setup(x => x.SendAndReceiveMessageAsync("GetAllVGRequest", It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((true, JsonSerializer.Serialize(vgResponse)));
+
+        // Act
+        var result = await _controller.GetAsync(variableRequest, default);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Result.Should().BeOfType<OkObjectResult>();
+        ((AdapterResponseModel<List<VariableResponse>>)((OkObjectResult)result.Result!).Value!).Should().BeEquivalentTo(variableGroupResponse);
+
+        _clientService.Verify(x => x.SendAndReceiveMessageAsync("GetAllVGRequest", It.IsAny<string>(), default), Times.Once);
+        _clientService.Verify(x => x.SendAndReceiveMessageAsync("GetProjectsRequest", It.IsAny<string>(), default), Times.Once);
+    }
+
+    [Test]
+    public async Task GetAsync_Works_well_4()
+    {
+        // Arrange
+        var organization = "Organization1";
+        var pat = "WtxMFit1uz1k64u527mB";
+        var project = "All";
+        var foundProject = "Project1";
+        string valueFilter = null!;
+
+        var variableRequest = TestSampleData.GetVariableRequest(organization, pat, project, "key", valueFilter);
+        var projectRes = GetProjectResponse(foundProject);
+        var vgResponse = GetVgResponse("Value123", "Value456", "Value789");
 
         var variableGroupResponse = TestSampleData.GetVariableGroupGetResponses(foundProject);
 
@@ -219,34 +235,7 @@ public class VariableGroupControllerTests
 
         var projectRes = GetProjectResponse(foundProject);
 
-        var vgResponse = new BaseResponse<AdapterResponseModel<IEnumerable<VariableGroup>>>()
-        {
-            Data = new AdapterResponseModel<IEnumerable<VariableGroup>>()
-            {
-                Data = new List<VariableGroup>()
-                {
-                    new()
-                    {
-                        Name = "NeptunAdapter",
-                        Type = "VariableGroup",
-                        Variables = new Dictionary<string, VariableValue>
-                        {
-                            ["Key123"] = new() { Value = "Value123" }
-                        }
-                    },
-                    new()
-                    {
-                        Name = "NeptunApi",
-                        Type = "VariableGroup",
-                        Variables = new Dictionary<string, VariableValue>
-                        {
-                            ["Key789"] = new() { Value = "Value789" }
-                        }
-                    }
-                },
-                Status = AdapterStatus.Success
-            }
-        };
+        var vgResponse = GetVgResponse();
 
         var response = new AdapterResponseModel<List<VariableGroupResponse>>()
         {
@@ -302,35 +291,7 @@ public class VariableGroupControllerTests
             KeyIsRegex = true,
             UserName = "user"
         };
-
-        var vgResponse = new BaseResponse<AdapterResponseModel<List<VariableGroup>>>()
-        {
-            Data = new AdapterResponseModel<List<VariableGroup>>()
-            {
-                Data =
-                [
-                    new()
-                    {
-                        Name = "NeptunAdapter",
-                        Type = "VariableGroup",
-                        Variables = new Dictionary<string, VariableValue>
-                        {
-                            ["Key123"] = new() { Value = "Value123" }
-                        }
-                    },
-                    new()
-                    {
-                        Name = "NeptunApi",
-                        Type = "VariableGroup",
-                        Variables = new Dictionary<string, VariableValue>
-                        {
-                            ["Key789"] = new() { Value = "Value789" }
-                        }
-                    }
-                ],
-                Status = AdapterStatus.Success
-            }
-        };
+        var vgResponse = GetVgResponse();
 
         var response = new AdapterResponseModel<List<VariableGroupResponse>>()
         {
@@ -370,34 +331,7 @@ public class VariableGroupControllerTests
         string valueFilter = null!;
         var newValue = "newValue";
         var variableRequest = TestSampleData.GetVariableUpdateRequest("Neptun", organization, pat, project, valueFilter, newValue);
-
-        var vgResponse = new BaseResponse<AdapterResponseModel<IEnumerable<SimplifiedVGResponse<string>>>>()
-        {
-            Data = new AdapterResponseModel<IEnumerable<SimplifiedVGResponse<string>>>()
-            {
-                Data = new List<SimplifiedVGResponse<string>>()
-                {
-                    new()
-                    {
-                        Name = "NeptunAdapter",
-                        Variables = new Dictionary<string, string>()
-                        {
-                            ["Key123"] = newValue,
-                            ["Key456"] = newValue
-                        }
-                    },
-                    new()
-                    {
-                        Name = "NeptunApi",
-                        Variables = new Dictionary<string, string>()
-                        {
-                            ["Key789"] = newValue
-                        }
-                    }
-                },
-                Status = AdapterStatus.Success
-            }
-        };
+        var vgResponse = GetVgResponse(newValue, newValue, newValue);
 
         var updateResponse = new BaseResponse<AdapterStatus>()
         {
@@ -437,34 +371,7 @@ public class VariableGroupControllerTests
         var variableRequest = TestSampleData.GetVariableUpdateRequest("Neptun", organization, pat, project, valueFilter, newValue);
 
         var projectRes = GetProjectResponse(foundProject);
-
-        var vgResponse = new BaseResponse<AdapterResponseModel<IEnumerable<SimplifiedVGResponse<string>>>>()
-        {
-            Data = new AdapterResponseModel<IEnumerable<SimplifiedVGResponse<string>>>()
-            {
-                Data = new List<SimplifiedVGResponse<string>>()
-                {
-                    new()
-                    {
-                        Name = "NeptunAdapter",
-                        Variables = new Dictionary<string, string>()
-                        {
-                            ["Key123"] = newValue,
-                            ["Key456"] = newValue
-                        }
-                    },
-                    new()
-                    {
-                        Name = "NeptunApi",
-                        Variables = new Dictionary<string, string>()
-                        {
-                            ["Key789"] = newValue
-                        }
-                    }
-                },
-                Status = AdapterStatus.Success
-            }
-        };
+        var vgResponse = GetVgResponse(newValue, newValue, newValue);
 
         var updateResponse = new BaseResponse<AdapterStatus>()
         {
@@ -756,6 +663,69 @@ public class VariableGroupControllerTests
     {
         DbContextTestBase.TearDownDatabaseContext(_operationsDbContext);
         await _operationsDbContext.DisposeAsync();
+    }
+
+    private static BaseResponse<AdapterResponseModel<IEnumerable<SimplifiedVGResponse<string>>>> GetVgResponse(string value, string value2, string value3)
+    {
+        return new BaseResponse<AdapterResponseModel<IEnumerable<SimplifiedVGResponse<string>>>>()
+        {
+            Data = new AdapterResponseModel<IEnumerable<SimplifiedVGResponse<string>>>()
+            {
+                Data = new List<SimplifiedVGResponse<string>>()
+                {
+                    new()
+                    {
+                        Name = "NeptunAdapter",
+                        Variables = new Dictionary<string, string>()
+                        {
+                            ["Key123"] = value,
+                            ["Key456"] = value2
+                        }
+                    },
+                    new()
+                    {
+                        Name = "NeptunApi",
+                        Variables = new Dictionary<string, string>()
+                        {
+                            ["Key789"] = value3
+                        }
+                    }
+                },
+                Status = AdapterStatus.Success
+            }
+        };
+    }
+
+    private static BaseResponse<AdapterResponseModel<List<VariableGroup>>> GetVgResponse()
+    {
+        return new BaseResponse<AdapterResponseModel<List<VariableGroup>>>()
+        {
+            Data = new AdapterResponseModel<List<VariableGroup>>()
+            {
+                Data =
+                [
+                    new()
+                    {
+                        Name = "NeptunAdapter",
+                        Type = "VariableGroup",
+                        Variables = new Dictionary<string, VariableValue>
+                        {
+                            ["Key123"] = new() { Value = "Value123" }
+                        }
+                    },
+                    new()
+                    {
+                        Name = "NeptunApi",
+                        Type = "VariableGroup",
+                        Variables = new Dictionary<string, VariableValue>
+                        {
+                            ["Key789"] = new() { Value = "Value789" }
+                        }
+                    }
+                ],
+                Status = AdapterStatus.Success
+            }
+        };
     }
 
     private static BaseResponse<AdapterResponseModel<IEnumerable<ProjectRequest>>> GetProjectResponse(string foundProject)
