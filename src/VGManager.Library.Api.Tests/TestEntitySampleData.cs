@@ -1,6 +1,5 @@
 using VGManager.Library.Entities.SecretEntities;
 using VGManager.Library.Entities.VGEntities;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace VGManager.Library.Api.Tests;
 

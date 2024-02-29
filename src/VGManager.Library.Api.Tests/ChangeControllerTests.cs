@@ -163,7 +163,7 @@ public class ChangeControllerTests
         result.Result.Should().BeOfType<OkObjectResult>();
         ((RepositoryResponseModel<SecretOperationModel>)((OkObjectResult)result.Result!).Value!).Should().BeEquivalentTo(response);
     }
-    
+
     [Test]
     public async Task GetKVChangesAsync_Works_well()
     {

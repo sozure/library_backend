@@ -2,9 +2,10 @@ using CorrelationId;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 using VGManager.Communication.Kafka.Extensions;
-using VGManager.Library.Api;
 using VGManager.Library.Api.HealthChecks;
 using VGManager.Library.Repositories.DbContexts;
+
+namespace VGManager.Library.Api;
 
 static partial class Program
 {

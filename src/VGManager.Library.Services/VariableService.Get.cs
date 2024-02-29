@@ -79,7 +79,7 @@ public partial class VariableService
         };
     }
 
-    private IEnumerable<VariableResult> GetVariables(
+    private List<VariableResult> GetVariables(
         string keyFilter,
         Regex? valueRegex,
         string project,
@@ -90,7 +90,7 @@ public partial class VariableService
         return CollectVariables(valueRegex, filteredVariableGroup, project, filteredVariables);
     }
 
-    private IEnumerable<VariableResult> GetVariables(
+    private List<VariableResult> GetVariables(
         Regex keyRegex,
         Regex? valueRegex,
         string project,

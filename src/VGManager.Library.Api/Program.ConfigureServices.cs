@@ -5,7 +5,6 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Infrastructure;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using VGManager.Adapter.Client.Extensions;
-using VGManager.Library.Api;
 using VGManager.Library.Api.HealthChecks;
 using VGManager.Library.Repositories.Boilerplate;
 using VGManager.Library.Repositories.DbContexts;
@@ -17,6 +16,8 @@ using VGManager.Library.Services;
 using VGManager.Library.Services.Interfaces;
 using VGManager.Library.Services.Settings;
 using ServiceProfiles = VGManager.Library.Services.MapperProfiles;
+
+namespace VGManager.Library.Api;
 
 [ExcludeFromCodeCoverage]
 static partial class Program

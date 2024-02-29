@@ -1,5 +1,6 @@
 using Azure.Security.KeyVault.Secrets;
 using Microsoft.Extensions.Logging;
+using System.Globalization;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using VGManager.Adapter.Models.Kafka;
@@ -43,19 +44,24 @@ public class KeyVaultService(
             return (string.Empty, Enumerable.Empty<string>());
         }
 
-        int.TryParse(result["Status"].ToString(), out int i);
-        var status = (AdapterStatus)i;
+        var parseCompleted = int.TryParse(result["Status"].ToString(), out int i);
 
-        if (status != AdapterStatus.Success)
+        if (parseCompleted)
         {
-            return (string.Empty, Enumerable.Empty<string>());
+            var status = (AdapterStatus)i;
+
+            if (status != AdapterStatus.Success)
+            {
+                return (string.Empty, Enumerable.Empty<string>());
+            }
+
+            var dict = JsonSerializer.Deserialize<Dictionary<string, object>>(result["Data"].ToString() ?? "[]");
+            var subscription = dict?["subscription"].ToString() ?? string.Empty;
+            var keyVaults = JsonSerializer.Deserialize<List<string>>(dict?["keyVaults"].ToString() ?? "[]") ?? [];
+
+            return new(subscription, keyVaults);
         }
-
-        var dict = JsonSerializer.Deserialize<Dictionary<string, object>>(result["Data"].ToString() ?? "[]");
-        var subscription = dict?["subscription"].ToString() ?? string.Empty;
-        var keyVaults = JsonSerializer.Deserialize<List<string>>(dict?["keyVaults"].ToString() ?? "[]") ?? [];
-
-        return new(subscription, keyVaults);
+        return (string.Empty, Enumerable.Empty<string>());
     }
 
     public async Task<AdapterResponseModel<IEnumerable<SecretResult>>> GetSecretsAsync(
@@ -195,14 +201,14 @@ public class KeyVaultService(
         }
 
         var filteredSecrets = Filter(result.Data, secretModel.SecretFilter);
-
+        var formatProvider = new CultureInfo("en-US");
         foreach (var filteredSecret in filteredSecrets)
         {
             secretList.Add(new()
             {
                 KeyVault = secretModel.KeyVaultName,
                 SecretName = filteredSecret["Name"]?.ToString() ?? string.Empty,
-                DeletedOn = DateTimeOffset.Parse(filteredSecret["DeletedOn"]?.ToString() ?? string.Empty).UtcDateTime
+                DeletedOn = DateTimeOffset.Parse(filteredSecret["DeletedOn"]?.ToString() ?? string.Empty, formatProvider).UtcDateTime
             });
         }
         return GetResult(status, secretList);
