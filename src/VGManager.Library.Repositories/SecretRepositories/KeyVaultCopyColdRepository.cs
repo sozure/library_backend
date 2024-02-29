@@ -13,12 +13,6 @@ public class KeyVaultCopyColdRepository(OperationsDbContext dbContext) : SqlRepo
         await SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<IEnumerable<KeyVaultCopyEntity>> GetAllAsync(CancellationToken cancellationToken = default)
-    {
-        var result = await GetAllAsync(new KeyVaultCopySpecification(), cancellationToken);
-        return result?.ToList() ?? Enumerable.Empty<KeyVaultCopyEntity>();
-    }
-
     public async Task<IEnumerable<KeyVaultCopyEntity>> GetAsync(
         DateTime from,
         DateTime to,
@@ -42,10 +36,6 @@ public class KeyVaultCopyColdRepository(OperationsDbContext dbContext) : SqlRepo
 
     public class KeyVaultCopySpecification : SpecificationBase<KeyVaultCopyEntity>
     {
-        public KeyVaultCopySpecification() : base(entity => !string.IsNullOrEmpty(entity.Id))
-        {
-        }
-
         public KeyVaultCopySpecification(DateTime from, DateTime to, string user) : base(
             entity => entity.Date >= from &&
             entity.Date <= to &&

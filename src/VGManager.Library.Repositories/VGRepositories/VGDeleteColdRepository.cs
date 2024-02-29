@@ -13,12 +13,6 @@ public class VGDeleteColdRepository(OperationsDbContext dbContext) : SqlReposito
         await SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<IEnumerable<VGDeleteEntity>> GetAllAsync(CancellationToken cancellationToken = default)
-    {
-        var result = await GetAllAsync(new DeletionSpecification(), cancellationToken);
-        return result?.ToList() ?? Enumerable.Empty<VGDeleteEntity>();
-    }
-
     public async Task<IEnumerable<VGDeleteEntity>> GetAsync(
         string organization,
         string project,
@@ -46,10 +40,6 @@ public class VGDeleteColdRepository(OperationsDbContext dbContext) : SqlReposito
 
     public class DeletionSpecification : SpecificationBase<VGDeleteEntity>
     {
-        public DeletionSpecification() : base(deletionEntity => !string.IsNullOrEmpty(deletionEntity.Id))
-        {
-        }
-
         public DeletionSpecification(string organization, string project, string user, DateTime from, DateTime to) : base(
             deletionEntity => deletionEntity.Date >= from &&
             deletionEntity.Date <= to &&

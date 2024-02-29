@@ -13,12 +13,6 @@ public class VGUpdateColdRepository(OperationsDbContext dbContext) : SqlReposito
         await SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<IEnumerable<VGUpdateEntity>> GetAllAsync(CancellationToken cancellationToken = default)
-    {
-        var result = await GetAllAsync(new EditionSpecification(), cancellationToken);
-        return result?.ToList() ?? Enumerable.Empty<VGUpdateEntity>();
-    }
-
     public async Task<IEnumerable<VGUpdateEntity>> GetAsync(
         string organization,
         string project,
@@ -46,10 +40,6 @@ public class VGUpdateColdRepository(OperationsDbContext dbContext) : SqlReposito
 
     public class EditionSpecification : SpecificationBase<VGUpdateEntity>
     {
-        public EditionSpecification() : base(editionEntity => !string.IsNullOrEmpty(editionEntity.Id))
-        {
-        }
-
         public EditionSpecification(string organization, string project, string user, DateTime from, DateTime to) : base(
             editionEntity => editionEntity.Date >= from &&
             editionEntity.Date <= to &&

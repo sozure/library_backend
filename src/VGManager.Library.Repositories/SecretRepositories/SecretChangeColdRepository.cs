@@ -13,12 +13,6 @@ public class SecretChangeColdRepository(OperationsDbContext dbContext) : SqlRepo
         await SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<IEnumerable<SecretChangeEntity>> GetAllAsync(CancellationToken cancellationToken = default)
-    {
-        var result = await GetAllAsync(new SecretChangeSpecification(), cancellationToken);
-        return result?.ToList() ?? Enumerable.Empty<SecretChangeEntity>();
-    }
-
     public async Task<IEnumerable<SecretChangeEntity>> GetAsync(
         DateTime from,
         DateTime to,
@@ -44,10 +38,6 @@ public class SecretChangeColdRepository(OperationsDbContext dbContext) : SqlRepo
 
     public class SecretChangeSpecification : SpecificationBase<SecretChangeEntity>
     {
-        public SecretChangeSpecification() : base(entity => !string.IsNullOrEmpty(entity.Id))
-        {
-        }
-
         public SecretChangeSpecification(DateTime from, DateTime to, string user, string keyVaultName) : base(
             secretChange => secretChange.Date >= from &&
             secretChange.Date <= to &&
