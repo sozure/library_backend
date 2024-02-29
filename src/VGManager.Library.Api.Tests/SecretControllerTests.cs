@@ -2,7 +2,6 @@ using AutoMapper;
 using Azure.Security.KeyVault.Secrets;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using System.Collections.Generic;
 using System.Text.Json;
 using VGManager.Adapter.Client.Interfaces;
 using VGManager.Adapter.Models.Models;
@@ -105,7 +104,7 @@ public class SecretControllerTests
         };
 
         _clientService.Setup(x => x.SendAndReceiveMessageAsync("GetKeyVaultsRequest", It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((false, JsonSerializer.Serialize((BaseResponse<Dictionary<string, object>>) null!)));
+            .ReturnsAsync((false, JsonSerializer.Serialize((BaseResponse<Dictionary<string, object>>)null!)));
 
         // Act
         var result = await _controller.GetKeyVaultsAsync(request, default);
@@ -323,7 +322,7 @@ public class SecretControllerTests
         var request = TestSampleData.GetRequest(keyVaultName, secretFilter, tenantId, clientId, clientSecret);
 
         _clientService.Setup(x => x.SendAndReceiveMessageAsync("GetDeletedSecretsRequest", It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((false, JsonSerializer.Serialize((BaseResponse<AdapterResponseModel<IEnumerable<Dictionary<string, object>>>>) null!)));
+            .ReturnsAsync((false, JsonSerializer.Serialize((BaseResponse<AdapterResponseModel<IEnumerable<Dictionary<string, object>>>>)null!)));
 
         // Act
         var result = _controller.GetDeletedAsync(request, default);
@@ -455,7 +454,7 @@ public class SecretControllerTests
         _clientService
             .Setup(x => x.SendAndReceiveMessageAsync("GetSecretsRequest", It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((
-                false, 
+                false,
                 JsonSerializer.Serialize((BaseResponse<AdapterResponseModel<IEnumerable<AdapterResponseModel<SimplifiedSecretResponse?>>>>)null!
                 )));
 
