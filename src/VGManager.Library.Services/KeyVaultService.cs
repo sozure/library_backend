@@ -201,14 +201,16 @@ public class KeyVaultService(
         }
 
         var filteredSecrets = Filter(result.Data, secretModel.SecretFilter);
-        var formatProvider = new CultureInfo("en-US");
         foreach (var filteredSecret in filteredSecrets)
         {
             secretList.Add(new()
             {
                 KeyVault = secretModel.KeyVaultName,
                 SecretName = filteredSecret["Name"]?.ToString() ?? string.Empty,
-                DeletedOn = DateTimeOffset.Parse(filteredSecret["DeletedOn"]?.ToString() ?? string.Empty, formatProvider).UtcDateTime
+                DeletedOn = DateTimeOffset.Parse(
+                    filteredSecret["DeletedOn"]?.ToString() ?? string.Empty, 
+                    CultureInfo.InvariantCulture
+                    ).UtcDateTime
             });
         }
         return GetResult(status, secretList);
