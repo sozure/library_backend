@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Logging;
-using Microsoft.TeamFoundation.DistributedTask.WebApi;
 using System.Text.Json;
 using VGManager.Adapter.Models.Kafka;
 using VGManager.Adapter.Models.Models;
@@ -16,7 +15,7 @@ public class VariableGroupService(
     ILogger<VariableGroupService> logger
         ) : IVariableGroupService
 {
-    public async Task<AdapterResponseModel<IEnumerable<VariableGroup>>> GetVariableGroupsAsync(
+    public async Task<AdapterResponseModel<IEnumerable<SimplifiedVGResponse<string>>>> GetVariableGroupsAsync(
         VariableGroupModel variableGroupModel,
         IEnumerable<string>? potentialVariableGroups,
         bool containsKey,
@@ -46,14 +45,14 @@ public class VariableGroupService(
 
         if (!isSuccess)
         {
-            return new() { Data = Enumerable.Empty<VariableGroup>() };
+            return new() { Data = Enumerable.Empty<SimplifiedVGResponse<string>>() };
         }
 
-        var adapterResult = JsonSerializer.Deserialize<BaseResponse<AdapterResponseModel<IEnumerable<VariableGroup>>>>(response)?.Data;
+        var adapterResult = JsonSerializer.Deserialize<BaseResponse<AdapterResponseModel<IEnumerable<SimplifiedVGResponse<string>>>>>(response)?.Data;
 
         if (adapterResult is null)
         {
-            return new() { Data = Enumerable.Empty<VariableGroup>() };
+            return new() { Data = Enumerable.Empty<SimplifiedVGResponse<string>>() };
         }
 
         var status = adapterResult.Status;
@@ -65,13 +64,17 @@ public class VariableGroupService(
         }
         else
         {
-            return GetResult(status, Enumerable.Empty<VariableGroup>());
+            return GetResult(status, Enumerable.Empty<SimplifiedVGResponse<string>>());
         }
     }
 
-    private static List<VariableGroup> GetVariableGroups(IEnumerable<VariableGroup> filteredVariableGroups, string keyFilter, bool containsKey)
+    private static List<SimplifiedVGResponse<string>> GetVariableGroups(
+        IEnumerable<SimplifiedVGResponse<string>> filteredVariableGroups,
+        string keyFilter,
+        bool containsKey
+        )
     {
-        var result = new List<VariableGroup>();
+        var result = new List<SimplifiedVGResponse<string>>();
         foreach (var variableGroup in filteredVariableGroups)
         {
             if (containsKey)
@@ -92,7 +95,10 @@ public class VariableGroupService(
         return result;
     }
 
-    private static AdapterResponseModel<IEnumerable<VariableGroup>> GetResult(AdapterStatus status, IEnumerable<VariableGroup> variableGroups)
+    private static AdapterResponseModel<IEnumerable<SimplifiedVGResponse<string>>> GetResult(
+        AdapterStatus status,
+        IEnumerable<SimplifiedVGResponse<string>> variableGroups
+        )
         => new()
         {
             Status = status,

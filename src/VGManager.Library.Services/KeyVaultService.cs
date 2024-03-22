@@ -208,7 +208,7 @@ public class KeyVaultService(
                 KeyVault = secretModel.KeyVaultName,
                 SecretName = filteredSecret["Name"]?.ToString() ?? string.Empty,
                 DeletedOn = DateTimeOffset.Parse(
-                    filteredSecret["DeletedOn"]?.ToString() ?? string.Empty, 
+                    filteredSecret["DeletedOn"]?.ToString() ?? string.Empty,
                     CultureInfo.InvariantCulture
                     ).UtcDateTime
             });

@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.TeamFoundation.Core.WebApi;
-using Microsoft.TeamFoundation.DistributedTask.WebApi;
 using System.Text.Json;
 using VGManager.Adapter.Client.Interfaces;
 using VGManager.Adapter.Models.Models;
@@ -665,7 +664,11 @@ public class VariableGroupControllerTests
         await _operationsDbContext.DisposeAsync();
     }
 
-    private static BaseResponse<AdapterResponseModel<IEnumerable<SimplifiedVGResponse<string>>>> GetVgResponse(string value, string value2, string value3)
+    private static BaseResponse<AdapterResponseModel<IEnumerable<SimplifiedVGResponse<string>>>> GetVgResponse(
+        string value,
+        string value2,
+        string value3
+        )
     {
         return new BaseResponse<AdapterResponseModel<IEnumerable<SimplifiedVGResponse<string>>>>()
         {
@@ -696,11 +699,11 @@ public class VariableGroupControllerTests
         };
     }
 
-    private static BaseResponse<AdapterResponseModel<List<VariableGroup>>> GetVgResponse()
+    private static BaseResponse<AdapterResponseModel<List<SimplifiedVGResponse<string>>>> GetVgResponse()
     {
-        return new BaseResponse<AdapterResponseModel<List<VariableGroup>>>()
+        return new BaseResponse<AdapterResponseModel<List<SimplifiedVGResponse<string>>>>()
         {
-            Data = new AdapterResponseModel<List<VariableGroup>>()
+            Data = new AdapterResponseModel<List<SimplifiedVGResponse<string>>>()
             {
                 Data =
                 [
@@ -708,18 +711,18 @@ public class VariableGroupControllerTests
                     {
                         Name = "NeptunAdapter",
                         Type = "VariableGroup",
-                        Variables = new Dictionary<string, VariableValue>
+                        Variables = new Dictionary<string, string>
                         {
-                            ["Key123"] = new() { Value = "Value123" }
+                            ["Key123"] = "Value123"
                         }
                     },
                     new()
                     {
                         Name = "NeptunApi",
                         Type = "VariableGroup",
-                        Variables = new Dictionary<string, VariableValue>
+                        Variables = new Dictionary<string, string>
                         {
-                            ["Key789"] = new() { Value = "Value789" }
+                            ["Key789"] = "Value789"
                         }
                     }
                 ],
