@@ -1,4 +1,4 @@
-﻿namespace VGManager.Library.Api;
+namespace VGManager.Library.Api;
 
 public static class Constants
 {
@@ -6,6 +6,7 @@ public static class Constants
     {
         public const string HealthChecksSettings = nameof(HealthChecksSettings);
         public const string OrganizationSettings = nameof(OrganizationSettings);
+        public const string CorsSettings = nameof(CorsSettings);
     }
 
     public static class Cors

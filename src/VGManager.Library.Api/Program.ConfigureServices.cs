@@ -33,12 +33,16 @@ static partial class Program
             options.AddToLoggingScope = true;
         });
 
+        var section = configuration.GetSection(Constants.SettingKeys.CorsSettings);
+        var corsSettings = section.Get<CorsSettings>() 
+            ?? throw new InvalidOperationException("Couldn't get CORS settings.");
+
         services.AddCors(options =>
         {
             options.AddPolicy(name: specificOrigins,
                                 policy =>
                                 {
-                                    policy.WithOrigins("http://localhost:3000")
+                                    policy.WithOrigins(corsSettings.AllowedOrigin)
                                     .AllowAnyMethod()
                                     .AllowAnyHeader();
                                 });
