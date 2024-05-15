@@ -10,23 +10,18 @@ namespace VGManager.Library.Api.Endpoints.VariableGroup;
 public partial class VariableGroupController
 {
     private static AdapterResponseModel<List<VariableResponse>> GetEmptyVariablesGetResponses()
-    {
-        return new()
+     => new()
         {
             Status = AdapterStatus.Success,
-            Data = new List<VariableResponse>()
+            Data = []
         };
-
-    }
 
     private static AdapterResponseModel<List<VariableGroupResponse>> GetEmptyVariableGroupGetResponses()
-    {
-        return new()
+        => new()
         {
             Status = AdapterStatus.Success,
-            Data = new List<VariableGroupResponse>()
+            Data = []
         };
-    }
 
     private async Task<AdapterResponseModel<IEnumerable<ProjectRequest>>> GetProjectsAsync(
         VariableRequest request,

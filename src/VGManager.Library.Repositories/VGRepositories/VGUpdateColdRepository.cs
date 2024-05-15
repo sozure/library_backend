@@ -23,7 +23,7 @@ public class VGUpdateColdRepository(OperationsDbContext dbContext) : SqlReposito
         )
     {
         var result = await GetAllAsync(new EditionSpecification(organization, project, user, from, to.AddDays(1)), cancellationToken);
-        return result?.ToList() ?? Enumerable.Empty<VGUpdateEntity>();
+        return result?.ToList() ?? [];
     }
 
     public async Task<IEnumerable<VGUpdateEntity>> GetAsync(
@@ -35,7 +35,7 @@ public class VGUpdateColdRepository(OperationsDbContext dbContext) : SqlReposito
         )
     {
         var result = await GetAllAsync(new EditionSpecification(organization, project, from, to.AddDays(1)), cancellationToken);
-        return result?.ToList() ?? Enumerable.Empty<VGUpdateEntity>();
+        return result?.ToList() ?? [];
     }
 
     public class EditionSpecification : SpecificationBase<VGUpdateEntity>

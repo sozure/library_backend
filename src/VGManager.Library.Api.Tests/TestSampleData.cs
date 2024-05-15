@@ -87,8 +87,8 @@ public static class TestSampleData
         => new()
         {
             Status = AdapterStatus.Success,
-            Data = new List<VariableGroupEnt>
-                {
+            Data =
+                [
                     new()
                     {
                         Name = "NeptunAdapter",
@@ -119,29 +119,29 @@ public static class TestSampleData
                             }
                         }
                     },
-                }
+                ]
         };
 
     public static AdapterResponseModel<IEnumerable<VariableGroupEnt>> GetVariableGroupEntity(AdapterStatus status)
         => new()
         {
             Status = status,
-            Data = Enumerable.Empty<VariableGroupEnt>()
+            Data = []
         };
 
     public static AdapterResponseModel<IEnumerable<VariableGroupEnt>> GetVariableGroupEntityAfterDelete()
         => new()
         {
             Status = AdapterStatus.Success,
-            Data = Enumerable.Empty<VariableGroupEnt>()
+            Data = []
         };
 
     public static AdapterResponseModel<IEnumerable<VariableGroupEnt>> GetVariableGroupEntity(string value)
         => new()
         {
             Status = AdapterStatus.Success,
-            Data = new List<VariableGroupEnt>
-                {
+            Data =
+                [
                     new()
                     {
                         Name = "NeptunAdapter",
@@ -168,15 +168,15 @@ public static class TestSampleData
                             }
                         }
                     },
-                }
+                ]
         };
 
     public static AdapterResponseModel<IEnumerable<VariableGroupEnt>> GetVariableGroupEntity(string key, string value)
         => new()
         {
             Status = AdapterStatus.Success,
-            Data = new List<VariableGroupEnt>
-                {
+            Data =
+                [
                     new()
                     {
                         Name = "NeptunAdapter",
@@ -199,7 +199,7 @@ public static class TestSampleData
                             }
                         }
                     },
-                }
+                ]
         };
 
     public static AdapterResponseModel<List<VariableResponse>> GetVariableGroupGetResponses(string projectName, string key, string value)
@@ -386,8 +386,8 @@ public static class TestSampleData
         => new()
         {
             Status = AdapterStatus.Success,
-            Data = new List<SecretResponse>()
-                {
+            Data =
+                [
                     new()
                     {
                         KeyVault = "KeyVaultName1",
@@ -406,15 +406,15 @@ public static class TestSampleData
                         SecretName = "SecretFilter789",
                         SecretValue = "ggl1oBLSiYNBliNQhsGW"
                     }
-                }
+                ]
         };
 
     public static AdapterResponseModel<IEnumerable<AdapterResponseModel<KeyVaultSecret?>>> GetSecretsEntity()
         => new()
         {
             Status = AdapterStatus.Success,
-            Data = new List<AdapterResponseModel<KeyVaultSecret?>>()
-                {
+            Data =
+                [
                     new()
                     {
                         Status = AdapterStatus.Success,
@@ -430,28 +430,28 @@ public static class TestSampleData
                         Status = AdapterStatus.Success,
                         Data = new("SecretFilter789", "ggl1oBLSiYNBliNQhsGW")
                     }
-                }
+                ]
         };
 
     public static AdapterResponseModel<IEnumerable<DeletedSecret>> GetEmptyDeletedSecretsEntity()
         => new()
         {
             Status = AdapterStatus.Success,
-            Data = Enumerable.Empty<DeletedSecret>()
+            Data = []
         };
 
     public static AdapterResponseModel<IEnumerable<AdapterResponseModel<KeyVaultSecret?>>> GetEmptySecretsEntity()
         => new()
         {
             Status = AdapterStatus.Success,
-            Data = Enumerable.Empty<AdapterResponseModel<KeyVaultSecret?>>()
+            Data = []
         };
 
     public static AdapterResponseModel<IEnumerable<SecretResponse>> GetEmptySecretsGetResponse()
         => new()
         {
             Status = AdapterStatus.Success,
-            Data = Enumerable.Empty<SecretResponse>()
+            Data = []
 
         };
 
@@ -459,6 +459,6 @@ public static class TestSampleData
         => new()
         {
             Status = AdapterStatus.Success,
-            Data = Enumerable.Empty<DeletedSecretResponse>()
+            Data = []
         };
 }

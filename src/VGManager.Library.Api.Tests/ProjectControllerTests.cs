@@ -59,19 +59,19 @@ public class ProjectControllerTests
         var projectsResponse = new AdapterResponseModel<IEnumerable<ProjectResponse>>
         {
             Status = AdapterStatus.Success,
-            Data = new List<ProjectResponse>()
-            {
+            Data =
+            [
                 new()
                 {
                     Name = firstProjectName,
-                    SubscriptionIds = Enumerable.Empty<string>()
+                    SubscriptionIds = []
                 },
                 new()
                 {
                     Name = secondProjectName,
-                    SubscriptionIds = Enumerable.Empty<string>()
+                    SubscriptionIds = []
                 }
-            }
+            ]
         };
 
         var projectRes = GetProjectResponse(firstProjectName, secondProjectName);
@@ -99,8 +99,8 @@ public class ProjectControllerTests
         {
             Data = new AdapterResponseModel<IEnumerable<AdapterProjectRequest>>()
             {
-                Data = new List<AdapterProjectRequest>()
-                {
+                Data =
+                [
                     new()
                     {
                         Project = new TeamProjectReference()
@@ -115,7 +115,7 @@ public class ProjectControllerTests
                             Name = foundProject2
                         }
                     }
-                },
+                ],
                 Status = AdapterStatus.Success
             }
         };

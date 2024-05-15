@@ -34,7 +34,7 @@ public class ProjectService(
         {
             return new AdapterResponseModel<IEnumerable<ProjectRequest>>()
             {
-                Data = Enumerable.Empty<ProjectRequest>()
+                Data = []
             };
         }
 
@@ -43,7 +43,7 @@ public class ProjectService(
         return result ?? new AdapterResponseModel<IEnumerable<ProjectRequest>>()
         {
             Status = AdapterStatus.Unknown,
-            Data = Enumerable.Empty<ProjectRequest>()
+            Data = []
         };
     }
 }

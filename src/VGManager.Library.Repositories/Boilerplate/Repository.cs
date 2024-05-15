@@ -28,15 +28,11 @@ public abstract class Repository<TEntity> : IRepository<TEntity> where TEntity :
         _dbSet = _dbContext.Set<TEntity>();
     }
 
-    public virtual Task AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default)
-    {
-        return _dbSet.AddRangeAsync(entities, cancellationToken);
-    }
+    public virtual Task AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) =>
+        _dbSet.AddRangeAsync(entities, cancellationToken);
 
-    public virtual ValueTask<TEntity?> FindAsync(object[] keys, CancellationToken cancellationToken = default)
-    {
-        return _dbSet.FindAsync(keys, cancellationToken);
-    }
+    public virtual ValueTask<TEntity?> FindAsync(object[] keys, CancellationToken cancellationToken = default) => 
+        _dbSet.FindAsync(keys, cancellationToken);
 
     public virtual void Remove(TEntity entity)
     {

@@ -155,8 +155,8 @@ public class SecretControllerTests
         {
             Data = new AdapterResponseModel<IEnumerable<AdapterResponseModel<SimplifiedSecretResponse?>>>
             {
-                Data = new List<AdapterResponseModel<SimplifiedSecretResponse?>>
-                {
+                Data =
+                [
                     new()
                     {
                         Data = new SimplifiedSecretResponse
@@ -181,7 +181,7 @@ public class SecretControllerTests
                             SecretValue = "ggl1oBLSiYNBliNQhsGW"
                         }
                     }
-                },
+                ],
                 Status = AdapterStatus.Success
             }
         };
@@ -213,7 +213,7 @@ public class SecretControllerTests
 
         var secretsGetResponse = new AdapterResponseModel<IEnumerable<SecretResponse>>
         {
-            Data = Enumerable.Empty<SecretResponse>(),
+            Data = [],
             Status = AdapterStatus.Unknown
         };
 
@@ -246,7 +246,7 @@ public class SecretControllerTests
 
         var secretsGetResponse = new AdapterResponseModel<IEnumerable<SecretResponse>>
         {
-            Data = Enumerable.Empty<SecretResponse>(),
+            Data = [],
             Status = AdapterStatus.Unknown
         };
 
@@ -281,8 +281,8 @@ public class SecretControllerTests
         {
             Data = new AdapterResponseModel<IEnumerable<Dictionary<string, object>>>
             {
-                Data = new List<Dictionary<string, object>>()
-                {
+                Data =
+                [
                     new()
                     {
                         { "Name", "DeletedSecretFilter123" },
@@ -293,7 +293,7 @@ public class SecretControllerTests
                         { "Name", "DeletedSecretFilter456" },
                         { "DeletedOn", "2022-10-01T00:00:00Z" }
                     }
-                },
+                ],
                 Status = AdapterStatus.Success
             }
         };
@@ -378,8 +378,8 @@ public class SecretControllerTests
         {
             Data = new AdapterResponseModel<IEnumerable<AdapterResponseModel<SimplifiedSecretResponse?>>>
             {
-                Data = new List<AdapterResponseModel<SimplifiedSecretResponse?>>
-                {
+                Data =
+                [
                     new()
                     {
                         Data = new SimplifiedSecretResponse
@@ -404,7 +404,7 @@ public class SecretControllerTests
                             SecretValue = "ggl1oBLSiYNBliNQhsGW"
                         }
                     }
-                },
+                ],
                 Status = AdapterStatus.Success
             }
         };
@@ -413,7 +413,7 @@ public class SecretControllerTests
         {
             Data = new AdapterResponseModel<IEnumerable<AdapterResponseModel<SimplifiedSecretResponse?>>>
             {
-                Data = Enumerable.Empty<AdapterResponseModel<SimplifiedSecretResponse?>>(),
+                Data = [],
                 Status = AdapterStatus.Success
             }
         };
@@ -523,8 +523,8 @@ public class SecretControllerTests
         {
             Data = new AdapterResponseModel<IEnumerable<AdapterResponseModel<SimplifiedSecretResponse?>>>
             {
-                Data = new List<AdapterResponseModel<SimplifiedSecretResponse?>>
-                {
+                Data =
+                [
                     new()
                     {
                         Data = new SimplifiedSecretResponse
@@ -549,7 +549,7 @@ public class SecretControllerTests
                             SecretValue = "ggl1oBLSiYNBliNQhsGW"
                         }
                     }
-                },
+                ],
                 Status = AdapterStatus.Success
             }
         };
@@ -593,8 +593,8 @@ public class SecretControllerTests
         {
             Data = new AdapterResponseModel<IEnumerable<Dictionary<string, object>>>
             {
-                Data = new List<Dictionary<string, object>>()
-                {
+                Data =
+                [
                     new()
                     {
                         { "Name", "DeletedSecretFilter123" },
@@ -605,7 +605,7 @@ public class SecretControllerTests
                         { "Name", "DeletedSecretFilter456" },
                         { "DeletedOn", "2022-10-01T00:00:00Z" }
                     }
-                },
+                ],
                 Status = AdapterStatus.Success
             }
         };
@@ -614,7 +614,7 @@ public class SecretControllerTests
         {
             Data = new AdapterResponseModel<IEnumerable<Dictionary<string, object>>>
             {
-                Data = Enumerable.Empty<Dictionary<string, object>>(),
+                Data = [],
                 Status = AdapterStatus.Success
             }
         };
@@ -662,8 +662,8 @@ public class SecretControllerTests
         {
             Data = new AdapterResponseModel<IEnumerable<Dictionary<string, object>>>
             {
-                Data = new List<Dictionary<string, object>>()
-                {
+                Data =
+                [
                     new()
                     {
                         { "Name", "DeletedSecretFilter123" },
@@ -674,7 +674,7 @@ public class SecretControllerTests
                         { "Name", "DeletedSecretFilter456" },
                         { "DeletedOn", "2022-10-01T00:00:00Z" }
                     }
-                },
+                ],
                 Status = AdapterStatus.Success
             }
         };
@@ -714,12 +714,12 @@ public class SecretControllerTests
         {
             Data = new AdapterResponseModel<IEnumerable<KeyVaultSecret>>
             {
-                Data = new List<KeyVaultSecret>
-                {
+                Data =
+                [
                     new("SecretFilter123", "3Kpu6gF214vAqHlzaX5G"),
                     new("SecretFilter456", "KCRQJ08PdFHU9Ly2pUI2"),
                     new("SecretFilter789", "ggl1oBLSiYNBliNQhsGW")
-                },
+                ],
                 Status = AdapterStatus.Success
             }
         };
@@ -728,7 +728,7 @@ public class SecretControllerTests
         {
             Data = new AdapterResponseModel<IEnumerable<KeyVaultSecret>>
             {
-                Data = Enumerable.Empty<KeyVaultSecret>(),
+                Data = [],
                 Status = AdapterStatus.Success
             }
         };

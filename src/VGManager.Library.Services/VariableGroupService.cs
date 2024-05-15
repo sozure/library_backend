@@ -45,14 +45,14 @@ public class VariableGroupService(
 
         if (!isSuccess)
         {
-            return new() { Data = Enumerable.Empty<SimplifiedVGResponse<string>>() };
+            return new() { Data = [] };
         }
 
         var adapterResult = JsonSerializer.Deserialize<BaseResponse<AdapterResponseModel<IEnumerable<SimplifiedVGResponse<string>>>>>(response)?.Data;
 
         if (adapterResult is null)
         {
-            return new() { Data = Enumerable.Empty<SimplifiedVGResponse<string>>() };
+            return new() { Data = [] };
         }
 
         var status = adapterResult.Status;
@@ -64,7 +64,7 @@ public class VariableGroupService(
         }
         else
         {
-            return GetResult(status, Enumerable.Empty<SimplifiedVGResponse<string>>());
+            return GetResult(status, []);
         }
     }
 

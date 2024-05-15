@@ -23,7 +23,7 @@ public class VGDeleteColdRepository(OperationsDbContext dbContext) : SqlReposito
         )
     {
         var result = await GetAllAsync(new DeletionSpecification(organization, project, user, from, to.AddDays(1)), cancellationToken);
-        return result?.ToList() ?? Enumerable.Empty<VGDeleteEntity>();
+        return result?.ToList() ?? [];
     }
 
     public async Task<IEnumerable<VGDeleteEntity>> GetAsync(
@@ -35,7 +35,7 @@ public class VGDeleteColdRepository(OperationsDbContext dbContext) : SqlReposito
         )
     {
         var result = await GetAllAsync(new DeletionSpecification(organization, project, from, to.AddDays(1)), cancellationToken);
-        return result?.ToList() ?? Enumerable.Empty<VGDeleteEntity>();
+        return result?.ToList() ?? [];
     }
 
     public class DeletionSpecification : SpecificationBase<VGDeleteEntity>

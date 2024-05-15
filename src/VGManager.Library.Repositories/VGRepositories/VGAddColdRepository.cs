@@ -23,7 +23,7 @@ public class VGAddColdRepository(OperationsDbContext dbContext) : SqlRepository<
         )
     {
         var result = await GetAllAsync(new AdditionSpecification(organization, project, user, from, to.AddDays(1)), cancellationToken);
-        return result?.ToList() ?? Enumerable.Empty<VGAddEntity>();
+        return result?.ToList() ?? [];
     }
 
     public async Task<IEnumerable<VGAddEntity>> GetAsync(
@@ -35,7 +35,7 @@ public class VGAddColdRepository(OperationsDbContext dbContext) : SqlRepository<
         )
     {
         var result = await GetAllAsync(new AdditionSpecification(organization, project, from, to.AddDays(1)), cancellationToken);
-        return result?.ToList() ?? Enumerable.Empty<VGAddEntity>();
+        return result?.ToList() ?? [];
     }
 
     public class AdditionSpecification : SpecificationBase<VGAddEntity>

@@ -22,7 +22,7 @@ public class SecretChangeColdRepository(OperationsDbContext dbContext) : SqlRepo
         )
     {
         var result = await GetAllAsync(new SecretChangeSpecification(from, to.AddDays(1), user, keyVaultName), cancellationToken);
-        return result?.ToList() ?? Enumerable.Empty<SecretChangeEntity>();
+        return result?.ToList() ?? [];
     }
 
     public async Task<IEnumerable<SecretChangeEntity>> GetAsync(
@@ -33,7 +33,7 @@ public class SecretChangeColdRepository(OperationsDbContext dbContext) : SqlRepo
         )
     {
         var result = await GetAllAsync(new SecretChangeSpecification(from, to.AddDays(1), keyVaultName), cancellationToken);
-        return result?.ToList() ?? Enumerable.Empty<SecretChangeEntity>();
+        return result?.ToList() ?? [];
     }
 
     public class SecretChangeSpecification : SpecificationBase<SecretChangeEntity>
