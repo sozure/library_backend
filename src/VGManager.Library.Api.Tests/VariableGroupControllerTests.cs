@@ -152,7 +152,7 @@ public class VariableGroupControllerTests
 
         var variableGroupResponse = new AdapterResponseModel<List<VariableResponse>>()
         {
-            Data = new List<VariableResponse>(),
+            Data = [],
             Status = AdapterStatus.Success
         };
 
@@ -452,8 +452,8 @@ public class VariableGroupControllerTests
         {
             Data = new AdapterResponseModel<IEnumerable<SimplifiedVGResponse<string>>>()
             {
-                Data = new List<SimplifiedVGResponse<string>>()
-                {
+                Data =
+                [
                     new()
                     {
                         Name = "NeptunAdapter",
@@ -470,7 +470,7 @@ public class VariableGroupControllerTests
                             ["Test1"] = newValue
                         }
                     }
-                },
+                ],
                 Status = AdapterStatus.Success
             }
         };
@@ -552,7 +552,7 @@ public class VariableGroupControllerTests
         {
             Data = new AdapterResponseModel<IEnumerable<SimplifiedVGResponse<string>>>()
             {
-                Data = Enumerable.Empty<SimplifiedVGResponse<string>>(),
+                Data = [],
                 Status = AdapterStatus.Success
             }
         };
@@ -598,7 +598,7 @@ public class VariableGroupControllerTests
         {
             Data = new AdapterResponseModel<IEnumerable<SimplifiedVGResponse<string>>>()
             {
-                Data = Enumerable.Empty<SimplifiedVGResponse<string>>(),
+                Data = [],
                 Status = AdapterStatus.Success
             }
         };
@@ -668,14 +668,12 @@ public class VariableGroupControllerTests
         string value,
         string value2,
         string value3
-        )
-    {
-        return new BaseResponse<AdapterResponseModel<IEnumerable<SimplifiedVGResponse<string>>>>()
+        ) => new()
         {
             Data = new AdapterResponseModel<IEnumerable<SimplifiedVGResponse<string>>>()
             {
-                Data = new List<SimplifiedVGResponse<string>>()
-                {
+                Data =
+                [
                     new()
                     {
                         Name = "NeptunAdapter",
@@ -693,19 +691,16 @@ public class VariableGroupControllerTests
                             ["Key789"] = value3
                         }
                     }
-                },
+                ],
                 Status = AdapterStatus.Success
             }
         };
-    }
 
-    private static BaseResponse<AdapterResponseModel<List<SimplifiedVGResponse<string>>>> GetVgResponse()
+    private static BaseResponse<AdapterResponseModel<List<SimplifiedVGResponse<string>>>> GetVgResponse() => new()
     {
-        return new BaseResponse<AdapterResponseModel<List<SimplifiedVGResponse<string>>>>()
+        Data = new AdapterResponseModel<List<SimplifiedVGResponse<string>>>()
         {
-            Data = new AdapterResponseModel<List<SimplifiedVGResponse<string>>>()
-            {
-                Data =
+            Data =
                 [
                     new()
                     {
@@ -726,19 +721,16 @@ public class VariableGroupControllerTests
                         }
                     }
                 ],
-                Status = AdapterStatus.Success
-            }
-        };
-    }
+            Status = AdapterStatus.Success
+        }
+    };
 
-    private static BaseResponse<AdapterResponseModel<IEnumerable<ProjectRequest>>> GetProjectResponse(string foundProject)
+    private static BaseResponse<AdapterResponseModel<IEnumerable<ProjectRequest>>> GetProjectResponse(string foundProject) => new()
     {
-        return new BaseResponse<AdapterResponseModel<IEnumerable<ProjectRequest>>>()
+        Data = new AdapterResponseModel<IEnumerable<ProjectRequest>>()
         {
-            Data = new AdapterResponseModel<IEnumerable<ProjectRequest>>()
-            {
-                Data = new List<ProjectRequest>()
-                {
+            Data =
+                [
                     new()
                     {
                         Project = new TeamProjectReference()
@@ -746,9 +738,8 @@ public class VariableGroupControllerTests
                             Name = foundProject
                         }
                     }
-                },
-                Status = AdapterStatus.Success
-            }
-        };
-    }
+                ],
+            Status = AdapterStatus.Success
+        }
+    };
 }

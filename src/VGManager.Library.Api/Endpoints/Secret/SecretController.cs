@@ -43,14 +43,14 @@ public class SecretController(IKeyVaultService keyVaultService, IMapper mapper) 
                 return Ok(new AdapterResponseModel<IEnumerable<string>, string>
                 {
                     Status = AdapterStatus.NoSubscriptionsFound,
-                    Data = Enumerable.Empty<string>()
+                    Data = []
                 });
             }
 
             return Ok(new AdapterResponseModel<IEnumerable<string>, string>
             {
                 Status = AdapterStatus.Unknown,
-                Data = Enumerable.Empty<string>()
+                Data = []
             });
         }
         catch (Exception)
@@ -58,7 +58,7 @@ public class SecretController(IKeyVaultService keyVaultService, IMapper mapper) 
             return Ok(new AdapterResponseModel<IEnumerable<string>, string>
             {
                 Status = AdapterStatus.Unknown,
-                Data = Enumerable.Empty<string>()
+                Data = []
             });
         }
     }

@@ -56,7 +56,7 @@ public class ChangeControllerTests
         // Arrange
         var request = new VGChangesRequest
         {
-            ChangeTypes = new List<ChangeType> { ChangeType.Add, ChangeType.Delete, ChangeType.Update },
+            ChangeTypes = [ChangeType.Add, ChangeType.Delete, ChangeType.Update],
             From = new DateTime(2024, 2, 27, 10, 0, 0, DateTimeKind.Utc),
             To = new DateTime(2024, 2, 29, 10, 0, 0, DateTimeKind.Utc),
             User = "beviktor95@gmail.com",
@@ -86,7 +86,7 @@ public class ChangeControllerTests
         // Arrange
         var request = new VGChangesRequest
         {
-            ChangeTypes = new List<ChangeType> { ChangeType.Add, ChangeType.Delete, ChangeType.Update },
+            ChangeTypes = [ChangeType.Add, ChangeType.Delete, ChangeType.Update],
             From = new DateTime(2024, 2, 27, 10, 0, 0, DateTimeKind.Utc),
             To = new DateTime(2024, 2, 29, 10, 0, 0, DateTimeKind.Utc),
             Limit = 10,
@@ -224,10 +224,7 @@ public class ChangeControllerTests
         await _operationsDbContext.DisposeAsync();
     }
 
-    private static List<KVOperationModel> GetKVCopyOperations()
-    {
-        return
-            [
+    private static List<KVOperationModel> GetKVCopyOperations() => [
                 new()
                 {
                     Id = "xyz",
@@ -236,13 +233,9 @@ public class ChangeControllerTests
                     Date = new DateTime(2024, 2, 28, 14, 0, 0, DateTimeKind.Utc),
                     User = "TestUser"
                 }
-            ];
-    }
+        ];
 
-    private static List<SecretOperationModel> GetSecretOperations()
-    {
-        return
-            [
+    private static List<SecretOperationModel> GetSecretOperations() => [
                 new()
                 {
                     Id = "xyz",
@@ -253,12 +246,8 @@ public class ChangeControllerTests
                     SecretNameRegex = "TestSecret"
                 }
             ];
-    }
 
-    private static List<VGOperationModel> GetVGOperations()
-    {
-        return
-            [
+    private static List<VGOperationModel> GetVGOperations() => [
                 new()
                 {
                     Id = "xyz",
@@ -293,5 +282,4 @@ public class ChangeControllerTests
                     Type = "Delete"
                 }
             ];
-    }
 }

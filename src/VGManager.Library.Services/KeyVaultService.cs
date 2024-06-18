@@ -34,14 +34,14 @@ public class KeyVaultService(
 
         if (!isSuccess)
         {
-            return (string.Empty, Enumerable.Empty<string>());
+            return (string.Empty, []);
         }
 
         var result = JsonSerializer.Deserialize<BaseResponse<Dictionary<string, object>>>(response)?.Data;
 
         if (result is null)
         {
-            return (string.Empty, Enumerable.Empty<string>());
+            return (string.Empty, []);
         }
 
         var parseCompleted = int.TryParse(result["Status"].ToString(), out int i);
@@ -52,7 +52,7 @@ public class KeyVaultService(
 
             if (status != AdapterStatus.Success)
             {
-                return (string.Empty, Enumerable.Empty<string>());
+                return (string.Empty, []);
             }
 
             var dict = JsonSerializer.Deserialize<Dictionary<string, object>>(result["Data"].ToString() ?? "[]");
@@ -61,7 +61,7 @@ public class KeyVaultService(
 
             return new(subscription, keyVaults);
         }
-        return (string.Empty, Enumerable.Empty<string>());
+        return (string.Empty, []);
     }
 
     public async Task<AdapterResponseModel<IEnumerable<SecretResult>>> GetSecretsAsync(
@@ -87,7 +87,7 @@ public class KeyVaultService(
 
         if (!isSuccess)
         {
-            return new AdapterResponseModel<IEnumerable<SecretResult>> { Data = Enumerable.Empty<SecretResult>(), Status = AdapterStatus.Unknown };
+            return new AdapterResponseModel<IEnumerable<SecretResult>> { Data = [], Status = AdapterStatus.Unknown };
         }
 
         var result = JsonSerializer
@@ -95,12 +95,12 @@ public class KeyVaultService(
 
         if (result is null)
         {
-            return new AdapterResponseModel<IEnumerable<SecretResult>> { Data = Enumerable.Empty<SecretResult>(), Status = AdapterStatus.Unknown };
+            return new AdapterResponseModel<IEnumerable<SecretResult>> { Data = [], Status = AdapterStatus.Unknown };
         }
 
         if (result.Status != AdapterStatus.Success)
         {
-            return new AdapterResponseModel<IEnumerable<SecretResult>> { Data = Enumerable.Empty<SecretResult>(), Status = result.Status };
+            return new AdapterResponseModel<IEnumerable<SecretResult>> { Data = [], Status = result.Status };
         }
 
         var secrets = CollectSecrets(result);
@@ -183,21 +183,21 @@ public class KeyVaultService(
 
         if (!isSuccess)
         {
-            return new AdapterResponseModel<IEnumerable<DeletedSecretResult>>() { Data = Enumerable.Empty<DeletedSecretResult>() };
+            return new AdapterResponseModel<IEnumerable<DeletedSecretResult>>() { Data = [] };
         }
 
         var result = JsonSerializer.Deserialize<BaseResponse<AdapterResponseModel<IEnumerable<Dictionary<string, object>>>>>(response)?.Data;
 
         if (result is null)
         {
-            return new AdapterResponseModel<IEnumerable<DeletedSecretResult>>() { Data = Enumerable.Empty<DeletedSecretResult>() };
+            return new AdapterResponseModel<IEnumerable<DeletedSecretResult>>() { Data = [] };
         }
 
         var status = result.Status;
 
         if (status != AdapterStatus.Success)
         {
-            return new AdapterResponseModel<IEnumerable<DeletedSecretResult>>() { Data = Enumerable.Empty<DeletedSecretResult>() };
+            return new AdapterResponseModel<IEnumerable<DeletedSecretResult>>() { Data = [] };
         }
 
         var filteredSecrets = Filter(result.Data, secretModel.SecretFilter);
@@ -328,21 +328,21 @@ public class KeyVaultService(
 
         if (!isSuccess)
         {
-            return Enumerable.Empty<KeyVaultSecret>();
+            return [];
         }
 
         var result = JsonSerializer.Deserialize<BaseResponse<AdapterResponseModel<IEnumerable<KeyVaultSecret>>>>(response)?.Data;
 
         if (result is null)
         {
-            return Enumerable.Empty<KeyVaultSecret>();
+            return [];
         }
 
         var status = result.Status;
 
         if (status != AdapterStatus.Success)
         {
-            return Enumerable.Empty<KeyVaultSecret>();
+            return [];
         }
 
         return result.Data;
@@ -405,7 +405,7 @@ public class KeyVaultService(
         catch (RegexParseException ex)
         {
             logger.LogError(ex, "Couldn't parse and create regex. Value: {value}.", filter);
-            return Enumerable.Empty<AdapterResponseModel<SimplifiedSecretResponse?>>();
+            return [];
         }
         var relevantSecrets = keyVaultSecrets.Where(secret => regex.IsMatch(secret?.Data?.SecretName.ToLower() ?? string.Empty)).ToList();
         var result = relevantSecrets.Select(secret => new AdapterResponseModel<SimplifiedSecretResponse?>
@@ -429,7 +429,7 @@ public class KeyVaultService(
         catch (RegexParseException ex)
         {
             logger.LogError(ex, "Couldn't parse and create regex. Value: {value}.", filter);
-            return Enumerable.Empty<Dictionary<string, object>>();
+            return [];
         }
         var relevantSecrets = keyVaultSecrets.Where(
             secret => regex.IsMatch(secret?["Name"].ToString()?.ToLower() ?? string.Empty)
@@ -521,7 +521,7 @@ public class KeyVaultService(
     {
         if (secretsResultModel is null)
         {
-            return Enumerable.Empty<AdapterResponseModel<SimplifiedSecretResponse?>>();
+            return [];
         }
 
         var relevantSecrets = secretsResultModel.Data.Where(secret => secret != null);
@@ -559,54 +559,39 @@ public class KeyVaultService(
     private static AdapterResponseModel<IEnumerable<DeletedSecretResult>> GetResult(
         AdapterStatus status,
         IEnumerable<DeletedSecretResult> secretList
-        )
-    {
-        return new()
+        ) => new()
         {
             Status = status,
             Data = secretList
         };
-    }
 
-    private static AdapterResponseModel<IEnumerable<SecretResult>> GetResult(AdapterStatus status, IEnumerable<SecretResult> secretList)
+    private static AdapterResponseModel<IEnumerable<SecretResult>> GetResult(AdapterStatus status, IEnumerable<SecretResult> secretList) => new()
     {
-        return new()
-        {
-            Status = status,
-            Data = secretList
-        };
-    }
+        Status = status,
+        Data = secretList
+    };
 
-    private static BaseSecretRequest GetBaseSecretRequest(SecretModel secretModel)
+    private static BaseSecretRequest GetBaseSecretRequest(SecretModel secretModel) => new()
     {
-        return new BaseSecretRequest()
-        {
-            ClientId = secretModel.ClientId,
-            ClientSecret = secretModel.ClientSecret,
-            TenantId = secretModel.TenantId,
-            KeyVaultName = secretModel.KeyVaultName
-        };
-    }
+        ClientId = secretModel.ClientId,
+        ClientSecret = secretModel.ClientSecret,
+        TenantId = secretModel.TenantId,
+        KeyVaultName = secretModel.KeyVaultName
+    };
 
-    private static BaseSecretRequest GetBaseSecretRequest(SecretBaseModel secretModel)
+    private static BaseSecretRequest GetBaseSecretRequest(SecretBaseModel secretModel) => new()
     {
-        return new BaseSecretRequest()
-        {
-            ClientId = secretModel.ClientId,
-            ClientSecret = secretModel.ClientSecret,
-            TenantId = secretModel.TenantId,
-            KeyVaultName = string.Empty
-        };
-    }
+        ClientId = secretModel.ClientId,
+        ClientSecret = secretModel.ClientSecret,
+        TenantId = secretModel.TenantId,
+        KeyVaultName = string.Empty
+    };
 
-    private static BaseSecretRequest GetBaseSecretRequest(SecretCopyModel secretModel, bool from)
+    private static BaseSecretRequest GetBaseSecretRequest(SecretCopyModel secretModel, bool from) => new()
     {
-        return new BaseSecretRequest()
-        {
-            ClientId = secretModel.ClientId,
-            ClientSecret = secretModel.ClientSecret,
-            TenantId = secretModel.TenantId,
-            KeyVaultName = from ? secretModel.FromKeyVault : secretModel.ToKeyVault
-        };
-    }
+        ClientId = secretModel.ClientId,
+        ClientSecret = secretModel.ClientSecret,
+        TenantId = secretModel.TenantId,
+        KeyVaultName = from ? secretModel.FromKeyVault : secretModel.ToKeyVault
+    };
 }

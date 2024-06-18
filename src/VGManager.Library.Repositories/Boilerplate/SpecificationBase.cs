@@ -7,10 +7,10 @@ public abstract class SpecificationBase<TEntity> : ISpecification<TEntity>
 {
     public Expression<Func<TEntity, bool>> Criteria { get; }
 
-    public ICollection<Expression<Func<TEntity, object>>> Includes { get; } = new List<Expression<Func<TEntity, object>>>();
+    public ICollection<Expression<Func<TEntity, object>>> Includes { get; } = [];
 
 
-    public ICollection<string> IncludeStrings { get; } = new List<string>();
+    public ICollection<string> IncludeStrings { get; } = [];
 
 
     protected SpecificationBase(Expression<Func<TEntity, bool>> criteria)

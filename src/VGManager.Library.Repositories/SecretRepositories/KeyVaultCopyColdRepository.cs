@@ -21,7 +21,7 @@ public class KeyVaultCopyColdRepository(OperationsDbContext dbContext) : SqlRepo
         )
     {
         var result = await GetAllAsync(new KeyVaultCopySpecification(from, to.AddDays(1), user), cancellationToken);
-        return result?.ToList() ?? Enumerable.Empty<KeyVaultCopyEntity>();
+        return result?.ToList() ?? [];
     }
 
     public async Task<IEnumerable<KeyVaultCopyEntity>> GetAsync(
@@ -31,7 +31,7 @@ public class KeyVaultCopyColdRepository(OperationsDbContext dbContext) : SqlRepo
         )
     {
         var result = await GetAllAsync(new KeyVaultCopySpecification(from, to.AddDays(1)), cancellationToken);
-        return result?.ToList() ?? Enumerable.Empty<KeyVaultCopyEntity>();
+        return result?.ToList() ?? [];
     }
 
     public class KeyVaultCopySpecification : SpecificationBase<KeyVaultCopyEntity>

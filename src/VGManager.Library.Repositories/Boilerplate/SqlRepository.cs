@@ -23,20 +23,14 @@ public abstract class SqlRepository<TEntity> : Repository<TEntity>, ISqlReposito
     //
     //   cancellationToken:
     //     The System.Threading.CancellationToken.
-    public ValueTask<EntityEntry<TEntity>> AddAsync(TEntity entity, CancellationToken cancellationToken = default)
-    {
-        return _dbSet.AddAsync(entity, cancellationToken);
-    }
+    public ValueTask<EntityEntry<TEntity>> AddAsync(TEntity entity, CancellationToken cancellationToken = default) => 
+        _dbSet.AddAsync(entity, cancellationToken);
 
-    public async Task<TEntity[]> GetAllAsync(ISpecification<TEntity> specification, CancellationToken cancellationToken = default)
-    {
-        return await ApplySpecification(specification).Where(specification.Criteria).ToArrayAsync(cancellationToken);
-    }
+    public async Task<TEntity[]> GetAllAsync(ISpecification<TEntity> specification, CancellationToken cancellationToken = default) =>
+        await ApplySpecification(specification).Where(specification.Criteria).ToArrayAsync(cancellationToken);
 
-    public IAsyncEnumerable<TEntity> GetAllAsAsyncEnumerable(ISpecification<TEntity> specification)
-    {
-        return ApplySpecification(specification).Where(specification.Criteria).AsAsyncEnumerable();
-    }
+    public IAsyncEnumerable<TEntity> GetAllAsAsyncEnumerable(ISpecification<TEntity> specification) =>
+        ApplySpecification(specification).Where(specification.Criteria).AsAsyncEnumerable();
 
     //
     // Summary:
@@ -44,10 +38,8 @@ public abstract class SqlRepository<TEntity> : Repository<TEntity>, ISqlReposito
     //
     // Returns:
     //     The Microsoft.EntityFrameworkCore.Storage.ExecutionStrategy
-    public virtual IExecutionStrategy GetExecutionStrategy()
-    {
-        return _dbContext.Database.CreateExecutionStrategy();
-    }
+    public virtual IExecutionStrategy GetExecutionStrategy() =>
+        _dbContext.Database.CreateExecutionStrategy();
 
     //
     // Summary:
@@ -56,10 +48,8 @@ public abstract class SqlRepository<TEntity> : Repository<TEntity>, ISqlReposito
     // Parameters:
     //   cancellationToken:
     //     The System.Threading.CancellationToken
-    public virtual Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-    {
-        return _dbContext.SaveChangesAsync(cancellationToken);
-    }
+    public virtual Task<int> SaveChangesAsync(CancellationToken cancellationToken = default) =>
+        _dbContext.SaveChangesAsync(cancellationToken);
 
     //
     // Summary:
@@ -68,10 +58,8 @@ public abstract class SqlRepository<TEntity> : Repository<TEntity>, ISqlReposito
     // Parameters:
     //   entity:
     //     The entity to update in database.
-    public EntityEntry<TEntity> Update(TEntity entity)
-    {
-        return _dbSet.Update(entity);
-    }
+    public EntityEntry<TEntity> Update(TEntity entity) =>
+        _dbSet.Update(entity);
 
     private IQueryable<TEntity> ApplySpecification(ISpecification<TEntity> specification)
     {

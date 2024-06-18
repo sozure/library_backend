@@ -194,7 +194,7 @@ public partial class VariableService(
             return new()
             {
                 Status = status,
-                Data = new List<VariableResult>(),
+                Data = [],
             };
         }
     }
@@ -225,7 +225,7 @@ public partial class VariableService(
 
         if (!isSuccess)
         {
-            return new() { Data = Enumerable.Empty<SimplifiedVGResponse<string>>(), Status = AdapterStatus.MessageSizeTooLarge };
+            return new() { Data = [], Status = AdapterStatus.MessageSizeTooLarge };
         }
 
         var adapterResult = JsonSerializer
@@ -233,7 +233,7 @@ public partial class VariableService(
 
         if (adapterResult is null)
         {
-            return new() { Data = Enumerable.Empty<SimplifiedVGResponse<string>>() };
+            return new() { Data = [] };
         }
 
         return adapterResult;
