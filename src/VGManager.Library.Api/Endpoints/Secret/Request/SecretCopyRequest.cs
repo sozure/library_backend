@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace VGManager.Library.Api.Endpoints.Secret.Request;
 
-public class SecretCopyRequest : SecretBaseRequest
+public record SecretCopyRequest : SecretBaseRequest
 {
     [Required]
     public string FromKeyVault { get; set; } = null!;

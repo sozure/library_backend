@@ -3,7 +3,7 @@ using VGManager.Library.Api.Common;
 
 namespace VGManager.Library.Api.Endpoints.VariableGroup.Request;
 
-public class VariableRequest : ExtendedBasicRequest
+public record VariableRequest : ExtendedBasicRequest
 {
     [Required]
     public string UserName { get; set; } = null!;

@@ -1,5 +1,5 @@
 namespace VGManager.Library.Services.Models.Secrets.Requests;
-public class SecretCopyModel : SecretBaseModel
+public record SecretCopyModel : SecretBaseModel
 {
     public string FromKeyVault { get; set; } = null!;
 

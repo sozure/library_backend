@@ -3,7 +3,7 @@ using VGManager.Library.Services.Models.Changes;
 
 namespace VGManager.Library.Api.Endpoints.Changes.Request;
 
-public class SecretChangesRequest : BaseRequest
+public record SecretChangesRequest : BaseRequest
 {
     [Required]
     public string KeyVaultName { get; set; } = null!;

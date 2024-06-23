@@ -1,6 +1,6 @@
 namespace VGManager.Library.Services.Models.VariableGroups.Results;
 
-public class VariableResult
+public record VariableResult
 {
     public string Project { get; set; } = null!;
     public bool SecretVariableGroup { get; set; }

@@ -1,6 +1,6 @@
 namespace VGManager.Library.Services.Models.Changes.Requests;
 
-public abstract class BaseRequestModel
+public abstract record BaseRequestModel
 {
     public DateTime From { get; set; }
     public DateTime To { get; set; }

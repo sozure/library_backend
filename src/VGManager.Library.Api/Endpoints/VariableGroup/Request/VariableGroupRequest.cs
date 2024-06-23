@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace VGManager.Library.Api.Endpoints.VariableGroup.Request;
 
-public class VariableGroupRequest : VariableRequest
+public record VariableGroupRequest : VariableRequest
 {
     [Required]
     public bool ContainsKey { get; set; }

@@ -1,6 +1,6 @@
-﻿namespace VGManager.Library.Api.HealthChecks;
+namespace VGManager.Library.Api.HealthChecks;
 
-public class HealthChecksSettings
+public record HealthChecksSettings
 {
     public int Port { get; set; }
 }

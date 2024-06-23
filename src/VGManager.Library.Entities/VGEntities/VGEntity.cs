@@ -1,6 +1,6 @@
 namespace VGManager.Library.Entities.VGEntities;
 
-public abstract class VGEntity
+public abstract record VGEntity
 {
     public string Id { get; set; } = null!;
     public string User { get; set; } = null!;
