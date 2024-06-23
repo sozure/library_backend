@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace VGManager.Library.Api.Endpoints.VariableGroup.Response;
 
-public class VariableGroupResponse
+public record VariableGroupResponse
 {
     [Required]
     public string Project { get; set; } = null!;

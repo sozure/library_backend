@@ -3,7 +3,7 @@ using VGManager.Library.Services.Models.Changes;
 
 namespace VGManager.Library.Api.Endpoints.Changes.Request;
 
-public class VGChangesRequest : BaseRequest
+public record VGChangesRequest : BaseRequest
 {
     [Required]
     public string Organization { get; set; } = null!;

@@ -1,6 +1,6 @@
 namespace VGManager.Library.Entities.SecretEntities;
 
-public class SecretChangeEntity : SecretBaseEntity
+public record SecretChangeEntity : SecretBaseEntity
 {
     public string KeyVaultName { get; set; } = null!;
     public string SecretNameRegex { get; set; } = null!;
