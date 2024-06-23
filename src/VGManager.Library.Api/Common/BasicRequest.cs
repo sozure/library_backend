@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace VGManager.Library.Api.Common;
 
-public class BasicRequest
+public record BasicRequest
 {
     [Required]
     public string Organization { get; set; } = null!;

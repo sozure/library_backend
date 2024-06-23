@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace VGManager.Library.Api.Endpoints.Secret.Request;
 
-public class SecretBaseRequest
+public record SecretBaseRequest
 {
     [Required]
     public string TenantId { get; set; } = null!;

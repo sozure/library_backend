@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace VGManager.Library.Api.Endpoints.Secret.Response;
 
-public abstract class SecretBaseResponse
+public abstract record SecretBaseResponse
 {
     [Required]
     public string KeyVault { get; set; } = null!;

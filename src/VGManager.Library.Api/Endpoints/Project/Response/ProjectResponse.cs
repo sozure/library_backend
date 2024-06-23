@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace VGManager.Library.Api.Endpoints.Project.Response;
 
-public class ProjectResponse
+public record ProjectResponse
 {
     [Required]
     public string Name { get; set; } = null!;
