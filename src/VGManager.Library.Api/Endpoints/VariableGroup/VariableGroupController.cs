@@ -127,7 +127,7 @@ public partial class VariableGroupController(
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<AdapterResponseModel<List<VariableResponse>>>> DeleteAsync(
-        [FromBody] VariableRequest request,
+        [FromBody] VariableChangeRequest request,
         CancellationToken cancellationToken
     )
     {
@@ -161,11 +161,11 @@ public partial class VariableGroupController(
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<ActionResult<AdapterStatus>> DeleteInlineAsync(
-        [FromBody] VariableRequest request,
+        [FromBody] VariableChangeRequest request,
         CancellationToken cancellationToken
     )
     {
-        var vgServiceModel = mapper.Map<VariableGroupModel>(request);
+        var vgServiceModel = mapper.Map<VariableGroupChangeModel>(request);
         var status = await variableService.DeleteVariablesAsync(vgServiceModel, false, cancellationToken);
         return Ok(status);
     }
