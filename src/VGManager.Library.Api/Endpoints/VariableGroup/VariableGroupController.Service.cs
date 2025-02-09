@@ -43,7 +43,7 @@ public partial class VariableGroupController
         CancellationToken cancellationToken
         )
     {
-        var vgServiceModel = mapper.Map<VariableGroupModel>(request);
+        var vgServiceModel = mapper.Map<VariableGroupChangeModel>(request);
         var status = await variableService.DeleteVariablesAsync(vgServiceModel, true, cancellationToken);
         var variableGroupResultModel = await variableService.GetVariablesAsync(vgServiceModel, cancellationToken);
 
@@ -61,7 +61,10 @@ public partial class VariableGroupController
         return result;
     }
 
-    private async Task<AdapterResponseModel<List<VariableResponse>>> GetBaseResultAsync(VariableRequest request, CancellationToken cancellationToken)
+    private async Task<AdapterResponseModel<List<VariableResponse>>> GetBaseResultAsync(
+        VariableRequest request, 
+        CancellationToken cancellationToken
+        )
     {
         var vgServiceModel = mapper.Map<VariableGroupModel>(request);
         var variableGroupResultsModel = await variableService.GetVariablesAsync(vgServiceModel, cancellationToken);

@@ -57,7 +57,7 @@ public static class TestSampleData
             KeyIsRegex = true
         };
 
-    public static VariableRequest GetVariableRequest(string organization, string pat, string project, string keyFilter, string valueFilter)
+    public static VariableChangeRequest GetVariableRequest(string organization, string pat, string project, string keyFilter, string valueFilter)
         => new()
         {
             Organization = organization,

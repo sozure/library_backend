@@ -129,7 +129,7 @@ public partial class VariableService(
     }
 
     public async Task<AdapterStatus?> DeleteVariablesAsync(
-        VariableGroupModel variableGroupModel,
+        VariableGroupChangeModel variableGroupModel,
         bool filterAsRegex,
         CancellationToken cancellationToken = default
         )
