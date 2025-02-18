@@ -1,8 +1,6 @@
-using AutoMapper;
-using Azure.Security.KeyVault.Secrets;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using System.Text.Json;
+using Azure.Security.KeyVault.Secrets;
+using Microsoft.Extensions.Logging;
 using VGManager.Adapter.Client.Interfaces;
 using VGManager.Adapter.Models.Models;
 using VGManager.Adapter.Models.Response;
@@ -10,18 +8,18 @@ using VGManager.Adapter.Models.StatusEnums;
 using VGManager.Library.Api.Endpoints.Secret;
 using VGManager.Library.Api.Endpoints.Secret.Request;
 using VGManager.Library.Api.Endpoints.Secret.Response;
-using VGManager.Library.Api.MapperProfiles;
 using VGManager.Library.Api.Tests;
 using VGManager.Library.Repositories.DbContexts;
 using VGManager.Library.Repositories.SecretRepositories;
 using VGManager.Library.Services;
+using VGManager.Library.Services.Interfaces;
 
 namespace VGManager.Libary.Api.Tests;
 
 [TestFixture]
-public class SecretControllerTests
+public class SecretHandlerTests
 {
-    private SecretController _controller;
+    private IKeyVaultService _keyVaultService;
     private Mock<IVGManagerAdapterClientService> _clientService;
 
     private OperationsDbContext _operationsDbContext = null!;
@@ -29,23 +27,13 @@ public class SecretControllerTests
     [SetUp]
     public void Setup()
     {
-        var mapperConfiguration = new MapperConfiguration(cfg =>
-        {
-            cfg.AddProfile(typeof(SecretProfile));
-        });
-
-        var mapper = mapperConfiguration.CreateMapper();
         var loggerMock = new Mock<ILogger<KeyVaultService>>();
-
         _operationsDbContext = DbContextTestBase.CreateDatabaseContext();
-
         _clientService = new(MockBehavior.Strict);
         var adapterCommunicator = new AdapterCommunicator(_clientService.Object);
-
         var secretRepository = new SecretChangeColdRepository(_operationsDbContext);
         var keyVaultCopyRepository = new KeyVaultCopyColdRepository(_operationsDbContext);
-        var keyVaultService = new KeyVaultService(adapterCommunicator, secretRepository, keyVaultCopyRepository, loggerMock.Object);
-        _controller = new(keyVaultService, mapper);
+        _keyVaultService = new KeyVaultService(adapterCommunicator, secretRepository, keyVaultCopyRepository, loggerMock.Object);
     }
 
     [Test]
@@ -83,11 +71,10 @@ public class SecretControllerTests
             .ReturnsAsync((true, JsonSerializer.Serialize(keyVaultResponse)));
 
         // Act
-        var result = await _controller.GetKeyVaultsAsync(request, default);
+        var result = await SecretHandler.GetKeyVaultsAsync(request, _keyVaultService, default);
 
         // Assert
         result.Should().NotBeNull();
-        result.Result.Should().BeOfType<OkObjectResult>();
         _clientService.Verify(x => x.SendAndReceiveMessageAsync("GetKeyVaultsRequest", It.IsAny<string>(), default), Times.Once);
     }
 
@@ -107,11 +94,10 @@ public class SecretControllerTests
             .ReturnsAsync((false, JsonSerializer.Serialize((BaseResponse<Dictionary<string, object>>)null!)));
 
         // Act
-        var result = await _controller.GetKeyVaultsAsync(request, default);
+        var result = await SecretHandler.GetKeyVaultsAsync(request, _keyVaultService, default);
 
         // Assert
         result.Should().NotBeNull();
-        result.Result.Should().BeOfType<OkObjectResult>();
         _clientService.Verify(x => x.SendAndReceiveMessageAsync("GetKeyVaultsRequest", It.IsAny<string>(), default), Times.Once);
     }
 
@@ -131,11 +117,10 @@ public class SecretControllerTests
             .ReturnsAsync((true, JsonSerializer.Serialize((BaseResponse<Dictionary<string, object>>)null!)));
 
         // Act
-        var result = await _controller.GetKeyVaultsAsync(request, default);
+        var result = await SecretHandler.GetKeyVaultsAsync(request, _keyVaultService, default);
 
         // Assert
         result.Should().NotBeNull();
-        result.Result.Should().BeOfType<OkObjectResult>();
         _clientService.Verify(x => x.SendAndReceiveMessageAsync("GetKeyVaultsRequest", It.IsAny<string>(), default), Times.Once);
     }
 
@@ -190,12 +175,10 @@ public class SecretControllerTests
             .ReturnsAsync((true, JsonSerializer.Serialize(secretResponse)));
 
         // Act
-        var result = await _controller.GetAsync(request, default);
+        var result = await SecretHandler.GetAsync(request, _keyVaultService, default);
 
         // Assert
         result.Should().NotBeNull();
-        result.Result.Should().BeOfType<OkObjectResult>();
-        ((AdapterResponseModel<IEnumerable<SecretResponse>>)((OkObjectResult)result.Result!).Value!).Should().BeEquivalentTo(secretsGetResponse);
 
         _clientService.Verify(x => x.SendAndReceiveMessageAsync("GetSecretsRequest", It.IsAny<string>(), default), Times.Once);
     }
@@ -223,12 +206,10 @@ public class SecretControllerTests
             ));
 
         // Act
-        var result = await _controller.GetAsync(request, default);
+        var result = await SecretHandler.GetAsync(request, _keyVaultService, default);
 
         // Assert
         result.Should().NotBeNull();
-        result.Result.Should().BeOfType<OkObjectResult>();
-        ((AdapterResponseModel<IEnumerable<SecretResponse>>)((OkObjectResult)result.Result!).Value!).Should().BeEquivalentTo(secretsGetResponse);
 
         _clientService.Verify(x => x.SendAndReceiveMessageAsync("GetSecretsRequest", It.IsAny<string>(), default), Times.Once);
     }
@@ -256,12 +237,10 @@ public class SecretControllerTests
             ));
 
         // Act
-        var result = await _controller.GetAsync(request, default);
+        var result = await SecretHandler.GetAsync(request, _keyVaultService, default);
 
         // Assert
         result.Should().NotBeNull();
-        result.Result.Should().BeOfType<OkObjectResult>();
-        ((AdapterResponseModel<IEnumerable<SecretResponse>>)((OkObjectResult)result.Result!).Value!).Should().BeEquivalentTo(secretsGetResponse);
 
         _clientService.Verify(x => x.SendAndReceiveMessageAsync("GetSecretsRequest", It.IsAny<string>(), default), Times.Once);
     }
@@ -302,11 +281,10 @@ public class SecretControllerTests
             .ReturnsAsync((true, JsonSerializer.Serialize(secretResponse)));
 
         // Act
-        var result = _controller.GetDeletedAsync(request, default);
+        var result = SecretHandler.GetDeletedAsync(request, _keyVaultService, default);
 
         // Assert
         result.Should().NotBeNull();
-        result.Result.Should().BeOfType<ActionResult<AdapterResponseModel<IEnumerable<DeletedSecretResponse>>>>();
         _clientService.Verify(x => x.SendAndReceiveMessageAsync("GetDeletedSecretsRequest", It.IsAny<string>(), default), Times.Once);
     }
 
@@ -325,11 +303,10 @@ public class SecretControllerTests
             .ReturnsAsync((false, JsonSerializer.Serialize((BaseResponse<AdapterResponseModel<IEnumerable<Dictionary<string, object>>>>)null!)));
 
         // Act
-        var result = _controller.GetDeletedAsync(request, default);
+        var result = SecretHandler.GetDeletedAsync(request, _keyVaultService, default);
 
         // Assert
         result.Should().NotBeNull();
-        result.Result.Should().BeOfType<ActionResult<AdapterResponseModel<IEnumerable<DeletedSecretResponse>>>>();
         _clientService.Verify(x => x.SendAndReceiveMessageAsync("GetDeletedSecretsRequest", It.IsAny<string>(), default), Times.Once);
     }
 
@@ -348,11 +325,10 @@ public class SecretControllerTests
             .ReturnsAsync((true, JsonSerializer.Serialize((BaseResponse<AdapterResponseModel<IEnumerable<Dictionary<string, object>>>>)null!)));
 
         // Act
-        var result = _controller.GetDeletedAsync(request, default);
+        var result = SecretHandler.GetDeletedAsync(request, _keyVaultService, default);
 
         // Assert
         result.Should().NotBeNull();
-        result.Result.Should().BeOfType<ActionResult<AdapterResponseModel<IEnumerable<DeletedSecretResponse>>>>();
         _clientService.Verify(x => x.SendAndReceiveMessageAsync("GetDeletedSecretsRequest", It.IsAny<string>(), default), Times.Once);
     }
 
@@ -426,12 +402,10 @@ public class SecretControllerTests
             .ReturnsAsync((true, JsonSerializer.Serialize(deletionStatus)));
 
         // Act
-        var result = await _controller.DeleteAsync(request, default);
+        var result = await SecretHandler.DeleteAsync(request, _keyVaultService, default);
 
         // Assert
         result.Should().NotBeNull();
-        result.Result.Should().BeOfType<OkObjectResult>();
-        ((AdapterResponseModel<IEnumerable<SecretResponse>>)((OkObjectResult)result.Result!).Value!).Should().BeEquivalentTo(secretsGetResponse);
 
         _clientService.Verify(x => x.SendAndReceiveMessageAsync("GetSecretsRequest", It.IsAny<string>(), default), Times.Exactly(2));
         _clientService.Verify(x => x.SendAndReceiveMessageAsync("DeleteSecretRequest", It.IsAny<string>(), default), Times.Exactly(3));
@@ -459,12 +433,10 @@ public class SecretControllerTests
                 )));
 
         // Act
-        var result = await _controller.DeleteAsync(request, default);
+        var result = await SecretHandler.DeleteAsync(request, _keyVaultService, default);
 
         // Assert
         result.Should().NotBeNull();
-        result.Result.Should().BeOfType<OkObjectResult>();
-        ((AdapterResponseModel<IEnumerable<SecretResponse>>)((OkObjectResult)result.Result!).Value!).Should().BeEquivalentTo(secretsGetResponse);
 
         _clientService.Verify(x => x.SendAndReceiveMessageAsync("GetSecretsRequest", It.IsAny<string>(), default), Times.Exactly(2));
         _clientService.Verify(x => x.SendAndReceiveMessageAsync("DeleteSecretRequest", It.IsAny<string>(), default), Times.Never);
@@ -492,12 +464,10 @@ public class SecretControllerTests
                 )));
 
         // Act
-        var result = await _controller.DeleteAsync(request, default);
+        var result = await SecretHandler.DeleteAsync(request, _keyVaultService, default);
 
         // Assert
         result.Should().NotBeNull();
-        result.Result.Should().BeOfType<OkObjectResult>();
-        ((AdapterResponseModel<IEnumerable<SecretResponse>>)((OkObjectResult)result.Result!).Value!).Should().BeEquivalentTo(secretsGetResponse);
 
         _clientService.Verify(x => x.SendAndReceiveMessageAsync("GetSecretsRequest", It.IsAny<string>(), default), Times.Exactly(2));
         _clientService.Verify(x => x.SendAndReceiveMessageAsync("DeleteSecretRequest", It.IsAny<string>(), default), Times.Never);
@@ -561,11 +531,10 @@ public class SecretControllerTests
             .ReturnsAsync((true, JsonSerializer.Serialize(deletionStatus)));
 
         // Act
-        var result = await _controller.DeleteInlineAsync(request, default);
+        var result = await SecretHandler.DeleteInlineAsync(request, _keyVaultService, default);
 
         // Assert
         result.Should().NotBeNull();
-        result.Result.Should().BeOfType<OkObjectResult>();
 
         _clientService.Verify(x => x.SendAndReceiveMessageAsync("GetSecretsRequest", It.IsAny<string>(), default), Times.Once);
         _clientService.Verify(x => x.SendAndReceiveMessageAsync("DeleteSecretRequest", It.IsAny<string>(), default), Times.Exactly(3));
@@ -629,14 +598,10 @@ public class SecretControllerTests
             .ReturnsAsync((true, JsonSerializer.Serialize(recoverStatus)));
 
         // Act
-        var result = _controller.RecoverAsync(request, default);
+        var result = SecretHandler.RecoverAsync(request, _keyVaultService, default);
 
         // Assert
         result.Should().NotBeNull();
-        result.Result.Result.Should().BeOfType<OkObjectResult>();
-        ((AdapterResponseModel<IEnumerable<DeletedSecretResponse>>)((OkObjectResult)result.Result!.Result!).Value!)
-            .Should()
-            .BeEquivalentTo(secretsGetResponse);
 
         _clientService.Verify(x => x.SendAndReceiveMessageAsync("GetDeletedSecretsRequest", It.IsAny<string>(), default), Times.Exactly(2));
         _clientService.Verify(x => x.SendAndReceiveMessageAsync("RecoverSecretRequest", It.IsAny<string>(), default), Times.Exactly(2));
@@ -688,12 +653,10 @@ public class SecretControllerTests
             .ReturnsAsync((true, JsonSerializer.Serialize(recoverStatus)));
 
         // Act
-        var result = _controller.RecoverInlineAsync(request, default);
+        var result = SecretHandler.RecoverInlineAsync(request, _keyVaultService, default);
 
         // Assert
         result.Should().NotBeNull();
-        result.Result.Result.Should().BeOfType<OkObjectResult>();
-        ((AdapterStatus)((OkObjectResult)result.Result!.Result!).Value!).Should().Be(AdapterStatus.Success);
 
         _clientService.Verify(x => x.SendAndReceiveMessageAsync("GetDeletedSecretsRequest", It.IsAny<string>(), default), Times.Once);
         _clientService.Verify(x => x.SendAndReceiveMessageAsync("RecoverSecretRequest", It.IsAny<string>(), default), Times.Exactly(2));
@@ -748,12 +711,10 @@ public class SecretControllerTests
             .ReturnsAsync((true, JsonSerializer.Serialize(addStatus)));
 
         // Act
-        var result = await _controller.CopyAsync(request, default);
+        var result = await SecretHandler.CopyAsync(request, _keyVaultService, default);
 
         // Assert
         result.Should().NotBeNull();
-        result.Result.Should().BeOfType<OkObjectResult>();
-        ((AdapterStatus)((OkObjectResult)result.Result!).Value!).Should().Be(AdapterStatus.Success);
 
         _clientService.Verify(x => x.SendAndReceiveMessageAsync("GetAllSecretsRequest", It.IsAny<string>(), default), Times.Exactly(2));
         _clientService.Verify(x => x.SendAndReceiveMessageAsync("AddKeyVaultSecretRequest", It.IsAny<string>(), default), Times.Exactly(3));

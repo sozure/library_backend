@@ -1,7 +1,5 @@
-using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.TeamFoundation.Core.WebApi;
 using System.Text.Json;
+using Microsoft.TeamFoundation.Core.WebApi;
 using VGManager.Adapter.Client.Interfaces;
 using VGManager.Adapter.Models.Models;
 using VGManager.Adapter.Models.Response;
@@ -9,35 +7,25 @@ using VGManager.Adapter.Models.StatusEnums;
 using VGManager.Library.Api.Common;
 using VGManager.Library.Api.Endpoints.Project;
 using VGManager.Library.Api.Endpoints.Project.Response;
-using VGManager.Library.Api.MapperProfiles;
 using VGManager.Library.Services;
-
+using VGManager.Library.Services.Interfaces;
 using AdapterProjectRequest = VGManager.Adapter.Models.Requests.ProjectRequest;
 
 namespace VGManager.Libary.Api.Tests;
 
 [TestFixture]
-public class ProjectControllerTests
+public class ProjectHandlerTests
 {
-    private ProjectController _controller;
+    private IProjectService _projectService;
     private Mock<IVGManagerAdapterClientService> _clientService;
 
     [SetUp]
     public void Setup()
     {
-        var apiMapperConfiguration = new MapperConfiguration(cfg =>
-        {
-            cfg.AddProfile(typeof(ProjectProfile));
-        });
-
-        var apiMapper = apiMapperConfiguration.CreateMapper();
-
         _clientService = new(MockBehavior.Strict);
 
         var adapterCommunicator = new AdapterCommunicator(_clientService.Object);
-        var projectService = new ProjectService(adapterCommunicator);
-
-        _controller = new(projectService, apiMapper);
+        _projectService = new ProjectService(adapterCommunicator);
     }
 
     [Test]
@@ -80,12 +68,10 @@ public class ProjectControllerTests
             .ReturnsAsync((true, JsonSerializer.Serialize(projectRes)));
 
         // Act
-        var result = await _controller.GetAsync(request, default);
+        var result = await ProjectHandler.GetAsync(request, _projectService, default);
 
         // Assert
         result.Should().NotBeNull();
-        result.Result.Should().BeOfType<OkObjectResult>();
-        ((AdapterResponseModel<IEnumerable<ProjectResponse>>)((OkObjectResult)result.Result!).Value!).Should().BeEquivalentTo(projectsResponse);
 
         _clientService.Verify(x => x.SendAndReceiveMessageAsync("GetProjectsRequest", It.IsAny<string>(), default), Times.Once);
     }

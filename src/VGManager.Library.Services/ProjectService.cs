@@ -13,7 +13,7 @@ public class ProjectService(
     IAdapterCommunicator adapterCommunicator
         ) : IProjectService
 {
-    public async Task<AdapterResponseModel<IEnumerable<ProjectRequest>>> GetProjectsAsync(
+    public async Task<AdapterResponseModel<List<ProjectRequest>>> GetProjectsAsync(
         BaseModel projectModel,
         CancellationToken cancellationToken = default
         )
@@ -32,15 +32,15 @@ public class ProjectService(
 
         if (!isSuccess)
         {
-            return new AdapterResponseModel<IEnumerable<ProjectRequest>>()
+            return new AdapterResponseModel<List<ProjectRequest>>()
             {
                 Data = []
             };
         }
 
-        var result = JsonSerializer.Deserialize<BaseResponse<AdapterResponseModel<IEnumerable<ProjectRequest>>>>(response)?.Data;
+        var result = JsonSerializer.Deserialize<BaseResponse<AdapterResponseModel<List<ProjectRequest>>>>(response)?.Data;
 
-        return result ?? new AdapterResponseModel<IEnumerable<ProjectRequest>>()
+        return result ?? new AdapterResponseModel<List<ProjectRequest>>()
         {
             Status = AdapterStatus.Unknown,
             Data = []
