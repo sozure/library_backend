@@ -1,7 +1,7 @@
+using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage;
-using System.Linq.Expressions;
 using VGManager.Library.Repositories.Interfaces.Boilerplate;
 
 namespace VGManager.Library.Repositories.Boilerplate;
@@ -23,7 +23,7 @@ public abstract class SqlRepository<TEntity> : Repository<TEntity>, ISqlReposito
     //
     //   cancellationToken:
     //     The System.Threading.CancellationToken.
-    public ValueTask<EntityEntry<TEntity>> AddAsync(TEntity entity, CancellationToken cancellationToken = default) => 
+    public ValueTask<EntityEntry<TEntity>> AddAsync(TEntity entity, CancellationToken cancellationToken = default) =>
         _dbSet.AddAsync(entity, cancellationToken);
 
     public async Task<TEntity[]> GetAllAsync(ISpecification<TEntity> specification, CancellationToken cancellationToken = default) =>

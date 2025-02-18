@@ -31,7 +31,7 @@ public abstract class Repository<TEntity> : IRepository<TEntity> where TEntity :
     public virtual Task AddRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default) =>
         _dbSet.AddRangeAsync(entities, cancellationToken);
 
-    public virtual ValueTask<TEntity?> FindAsync(object[] keys, CancellationToken cancellationToken = default) => 
+    public virtual ValueTask<TEntity?> FindAsync(object[] keys, CancellationToken cancellationToken = default) =>
         _dbSet.FindAsync(keys, cancellationToken);
 
     public virtual void Remove(TEntity entity)

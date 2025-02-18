@@ -1,8 +1,8 @@
-using Azure.Security.KeyVault.Secrets;
-using Microsoft.Extensions.Logging;
 using System.Globalization;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using Azure.Security.KeyVault.Secrets;
+using Microsoft.Extensions.Logging;
 using VGManager.Adapter.Models.Kafka;
 using VGManager.Adapter.Models.Models;
 using VGManager.Adapter.Models.Requests;

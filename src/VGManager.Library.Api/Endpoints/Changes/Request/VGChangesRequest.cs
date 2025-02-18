@@ -10,5 +10,5 @@ public record VGChangesRequest : BaseRequest
     [Required]
     public string Project { get; set; } = null!;
     [Required]
-    public IEnumerable<ChangeType> ChangeTypes { get; set; } = Array.Empty<ChangeType>();
+    public IEnumerable<ChangeType> ChangeTypes { get; set; } = [];
 }
