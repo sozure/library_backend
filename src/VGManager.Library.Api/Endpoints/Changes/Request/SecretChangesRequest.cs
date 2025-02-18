@@ -8,5 +8,5 @@ public record SecretChangesRequest : BaseRequest
     [Required]
     public string KeyVaultName { get; set; } = null!;
     [Required]
-    public IEnumerable<ChangeType> ChangeTypes { get; set; } = Array.Empty<ChangeType>();
+    public IEnumerable<ChangeType> ChangeTypes { get; set; } = [];
 }

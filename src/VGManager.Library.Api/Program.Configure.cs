@@ -2,6 +2,10 @@ using CorrelationId;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 using VGManager.Communication.Kafka.Extensions;
+using VGManager.Library.Api.Endpoints.Changes;
+using VGManager.Library.Api.Endpoints.Project;
+using VGManager.Library.Api.Endpoints.Secret;
+using VGManager.Library.Api.Endpoints.VariableGroup;
 using VGManager.Library.Api.HealthChecks;
 using VGManager.Library.Repositories.DbContexts;
 
@@ -36,6 +40,13 @@ static partial class Program
         app.UseCorrelationIdValidation();
         app.UseCorrelationId();
 
+        app.MapGroup("api/azurelibrary")
+            .RequireCors(specificOrigins)
+            .MapChangesHandler()
+            .MapVariableGroupHandler()
+            .MapProjectHandler()
+            .MapSecretHandler();
+
         await ApplyDbMigrationsAsync(app);
         RegisterStartupReadiness(app);
 
@@ -44,7 +55,6 @@ static partial class Program
         app.UseHttpsRedirection();
         app.UseCors(specificOrigins);
         app.UseAuthorization();
-        app.MapControllers();
 
         return app;
     }

@@ -1,9 +1,9 @@
+using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using CorrelationId.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Infrastructure;
-using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
 using VGManager.Adapter.Client.Extensions;
 using VGManager.Library.Api.HealthChecks;
 using VGManager.Library.Repositories.Boilerplate;
@@ -15,7 +15,6 @@ using VGManager.Library.Repositories.VGRepositories;
 using VGManager.Library.Services;
 using VGManager.Library.Services.Interfaces;
 using VGManager.Library.Services.Settings;
-using ServiceProfiles = VGManager.Library.Services.MapperProfiles;
 
 namespace VGManager.Library.Api;
 
@@ -34,7 +33,7 @@ static partial class Program
         });
 
         var section = configuration.GetSection(Constants.SettingKeys.CorsSettings);
-        var corsSettings = section.Get<CorsSettings>() 
+        var corsSettings = section.Get<CorsSettings>()
             ?? throw new InvalidOperationException("Couldn't get CORS settings.");
 
         services.AddCors(options =>
@@ -60,14 +59,8 @@ static partial class Program
         });
 
         services.AddAuthorization();
-        services.AddControllers();
         services.AddHealthChecks()
             .AddCheck<StartupHealthCheck>(nameof(StartupHealthCheck), tags: Tags);
-
-        services.AddAutoMapper(
-            typeof(Program),
-            typeof(ServiceProfiles.ChangesProfile)
-        );
 
         services.AddOptions<OrganizationSettings>()
             .Bind(configuration.GetSection(Constants.SettingKeys.OrganizationSettings))

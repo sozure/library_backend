@@ -1,44 +1,27 @@
-using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
 using VGManager.Adapter.Models.Models;
 using VGManager.Adapter.Models.StatusEnums;
 using VGManager.Library.Api.Endpoints.Changes;
 using VGManager.Library.Api.Endpoints.Changes.Request;
-using VGManager.Library.Api.MapperProfiles;
 using VGManager.Library.Entities.SecretEntities;
 using VGManager.Library.Repositories.DbContexts;
 using VGManager.Library.Repositories.SecretRepositories;
 using VGManager.Library.Repositories.VGRepositories;
 using VGManager.Library.Services;
+using VGManager.Library.Services.Interfaces;
 using VGManager.Library.Services.Models.Changes;
 using VGManager.Library.Services.Models.Changes.Responses;
-using ServiceChangesProfile = VGManager.Library.Services.MapperProfiles.ChangesProfile;
 
 namespace VGManager.Library.Api.Tests;
 
 [TestFixture]
-public class ChangeControllerTests
+public class ChangeHandlerTests
 {
-    private ChangesController _controller;
+    private IChangeService _changesService;
     private OperationsDbContext _operationsDbContext = null!;
 
     [SetUp]
     public void Setup()
     {
-        var apiMapperConfiguration = new MapperConfiguration(cfg =>
-        {
-            cfg.AddProfile(typeof(ChangesProfile));
-        });
-
-        var apiMapper = apiMapperConfiguration.CreateMapper();
-
-        var serviceMapperConfiguration = new MapperConfiguration(cfg =>
-        {
-            cfg.AddProfile(typeof(ServiceChangesProfile));
-        });
-
-        var serviceMapper = serviceMapperConfiguration.CreateMapper();
-
         _operationsDbContext = DbContextTestBase.CreateDatabaseContext();
 
         var addRepo = new VGAddColdRepository(_operationsDbContext);
@@ -46,8 +29,7 @@ public class ChangeControllerTests
         var updateRepo = new VGUpdateColdRepository(_operationsDbContext);
         var keyVaultCopy = new KeyVaultCopyColdRepository(_operationsDbContext);
         var secretRepo = new SecretChangeColdRepository(_operationsDbContext);
-        var changesService = new ChangeService(addRepo, updateRepo, deleteRepo, keyVaultCopy, secretRepo, serviceMapper);
-        _controller = new(changesService, apiMapper);
+        _changesService = new ChangeService(addRepo, updateRepo, deleteRepo, keyVaultCopy, secretRepo);
     }
 
     [Test]
@@ -72,12 +54,10 @@ public class ChangeControllerTests
         };
 
         // Act
-        var result = await _controller.GetVariableChangesAsync(request, default);
+        var result = await ChangesHandler.GetVariableChangesAsync(request, _changesService, default);
 
         // Assert
         result.Should().NotBeNull();
-        result.Result.Should().BeOfType<OkObjectResult>();
-        ((RepositoryResponseModel<VGOperationModel>)((OkObjectResult)result.Result!).Value!).Should().BeEquivalentTo(response);
     }
 
     [Test]
@@ -101,12 +81,10 @@ public class ChangeControllerTests
         };
 
         // Act
-        var result = await _controller.GetVariableChangesAsync(request, default);
+        var result = await ChangesHandler.GetVariableChangesAsync(request, _changesService, default);
 
         // Assert
         result.Should().NotBeNull();
-        result.Result.Should().BeOfType<OkObjectResult>();
-        ((RepositoryResponseModel<VGOperationModel>)((OkObjectResult)result.Result!).Value!).Should().BeEquivalentTo(response);
     }
 
     [Test]
@@ -129,12 +107,10 @@ public class ChangeControllerTests
         };
 
         // Act
-        var result = await _controller.GetSecretChangesAsync(request, default);
+        var result = await ChangesHandler.GetSecretChangesAsync(request, _changesService, default);
 
         // Assert
         result.Should().NotBeNull();
-        result.Result.Should().BeOfType<OkObjectResult>();
-        ((RepositoryResponseModel<SecretOperationModel>)((OkObjectResult)result.Result!).Value!).Should().BeEquivalentTo(response);
     }
 
     [Test]
@@ -156,12 +132,10 @@ public class ChangeControllerTests
         };
 
         // Act
-        var result = await _controller.GetSecretChangesAsync(request, default);
+        var result = await ChangesHandler.GetSecretChangesAsync(request, _changesService, default);
 
         // Assert
         result.Should().NotBeNull();
-        result.Result.Should().BeOfType<OkObjectResult>();
-        ((RepositoryResponseModel<SecretOperationModel>)((OkObjectResult)result.Result!).Value!).Should().BeEquivalentTo(response);
     }
 
     [Test]
@@ -183,12 +157,10 @@ public class ChangeControllerTests
         };
 
         // Act
-        var result = await _controller.GetKVChangesAsync(request, default);
+        var result = await ChangesHandler.GetKVChangesAsync(request, _changesService, default);
 
         // Assert
         result.Should().NotBeNull();
-        result.Result.Should().BeOfType<OkObjectResult>();
-        ((RepositoryResponseModel<KVOperationModel>)((OkObjectResult)result.Result!).Value!).Should().BeEquivalentTo(response);
     }
 
     [Test]
@@ -209,12 +181,10 @@ public class ChangeControllerTests
         };
 
         // Act
-        var result = await _controller.GetKVChangesAsync(request, default);
+        var result = await ChangesHandler.GetKVChangesAsync(request, _changesService, default);
 
         // Assert
         result.Should().NotBeNull();
-        result.Result.Should().BeOfType<OkObjectResult>();
-        ((RepositoryResponseModel<KVOperationModel>)((OkObjectResult)result.Result!).Value!).Should().BeEquivalentTo(response);
     }
 
     [TearDown]

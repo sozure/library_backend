@@ -1,8 +1,8 @@
-using AutoMapper;
 using VGManager.Library.Repositories.Interfaces.SecretRepositories;
 using VGManager.Library.Repositories.Interfaces.VGRepositories;
 using VGManager.Library.Services.Interfaces;
 using VGManager.Library.Services.Models.Changes;
+using VGManager.Library.Services.Models.Changes.Extensions;
 using VGManager.Library.Services.Models.Changes.Requests;
 using VGManager.Library.Services.Models.Changes.Responses;
 
@@ -13,8 +13,7 @@ public class ChangeService(
     IVGUpdateColdRepository editionColdRepository,
     IVGDeleteColdRepository deletionColdRepository,
     IKeyVaultCopyColdRepository keyVaultCopyColdRepository,
-    ISecretChangeColdRepository secretChangeColdRepository,
-    IMapper mapper
+    ISecretChangeColdRepository secretChangeColdRepository
     ) : IChangeService
 {
     public async Task<IEnumerable<VGOperationModel>> GetAsync(
@@ -36,19 +35,19 @@ public class ChangeService(
                     var addEntities = user is null ?
                         await additionColdRepository.GetAsync(organization, project, from, to, cancellationToken) :
                         await additionColdRepository.GetAsync(organization, project, user, from, to, cancellationToken);
-                    result.AddRange(mapper.Map<IEnumerable<VGOperationModel>>(addEntities));
+                    result.AddRange(addEntities.Select(x => x.ToModel()));
                     break;
                 case ChangeType.Update:
                     var updateEntities = user is null ?
                         await editionColdRepository.GetAsync(organization, project, from, to, cancellationToken) :
                         await editionColdRepository.GetAsync(organization, project, user, from, to, cancellationToken);
-                    result.AddRange(mapper.Map<IEnumerable<VGOperationModel>>(updateEntities));
+                    result.AddRange(updateEntities.Select(x => x.ToModel()));
                     break;
                 case ChangeType.Delete:
                     var deleteEntities = user is null ?
                         await deletionColdRepository.GetAsync(organization, project, from, to, cancellationToken) :
                         await deletionColdRepository.GetAsync(organization, project, user, from, to, cancellationToken);
-                    result.AddRange(mapper.Map<IEnumerable<VGOperationModel>>(deleteEntities));
+                    result.AddRange(deleteEntities.Select(x => x.ToModel()));
                     break;
                 default:
                     throw new InvalidOperationException($"ChangeType does not exist: {nameof(changeType)}");
@@ -72,7 +71,7 @@ public class ChangeService(
         var secretEntities = user is null ?
         await secretChangeColdRepository.GetAsync(from, to, keyVaultName, cancellationToken) :
                 await secretChangeColdRepository.GetAsync(from, to, user, keyVaultName, cancellationToken);
-        result.AddRange(mapper.Map<IEnumerable<SecretOperationModel>>(secretEntities));
+        result.AddRange(secretEntities.Select(x => x.ToModel()));
         var sortedResult = result.OrderByDescending(entity => entity.Date);
         return sortedResult.Take(model.Limit);
     }
@@ -89,7 +88,7 @@ public class ChangeService(
         var secretEntities = user is null ?
         await keyVaultCopyColdRepository.GetAsync(from, to, cancellationToken) :
                 await keyVaultCopyColdRepository.GetAsync(from, to, user, cancellationToken);
-        result.AddRange(mapper.Map<IEnumerable<KVOperationModel>>(secretEntities));
+        result.AddRange(secretEntities.Select(x => x.ToModel()));
         var sortedResult = result.OrderByDescending(entity => entity.Date);
         return sortedResult.Take(model.Limit);
     }
